@@ -1,0 +1,26 @@
+{
+  "name": "wavedash-springjam-2026",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@babylonjs/core": "*",
+    "@babylonjs/havok": "*",
+    "@babylonjs/inspector": "*",
+    "@babylonjs/loaders": "*",
+    "@types/earcut": "^3.0.0",
+    "babylonjs-extra-meshes-kit": "*",
+    "babylonjs-tiaratumgames-tools": "*",
+    "typescript": "~6.0.2",
+    "vite": "^8.0.4"
+  },
+  "dependencies": {
+    "bootstrap-icons": "^1.13.1",
+    "earcut": "^3.0.2"
+  }
+}
