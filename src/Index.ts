@@ -11,5 +11,10 @@ const canvas = document.createElement('canvas')
 canvas.id = 'render-canvas'
 app.appendChild(canvas);
 
+const nextBtn = document.createElement('button');
+nextBtn.id = 'next-btn';
+nextBtn.textContent = 'Next';
+app.appendChild(nextBtn);
+
 const game = new Game(canvas);
-game.start();
+game.initAndStart();
