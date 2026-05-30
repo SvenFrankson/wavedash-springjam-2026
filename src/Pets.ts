@@ -95,5 +95,18 @@ export class Pet extends Mesh {
             this.game.scene
         );
         body.shape.material = {friction: 0.2, restitution: 0.3};
+        console.log(body.shape.filterCollideMask);
+    }
+
+    public disableCollisions(): void {
+        if (this.physicsBody && this.physicsBody.shape) {
+            this.physicsBody.shape.filterCollideMask = 0;
+        }
+    }
+
+    public enableCollisions(): void {
+        if (this.physicsBody && this.physicsBody.shape) {
+            this.physicsBody.shape.filterCollideMask = -1;
+        }
     }
 }

@@ -25,12 +25,21 @@ export class PlayerControl {
     private _newBox: Block | null = null;
     private _newBoxSize: Vector3 = new Vector3(0.5, 0.5, 1);
     private _localAnchor: Vector3 = Vector3.Zero();
+
     public verticalPanel: Mesh;
     
     constructor(public game: Game) {
-        this.verticalPanel = MeshBuilder.CreatePlane("verticalPanel", { width: 20, height: 40 }, this.scene);
+        this.verticalPanel = MeshBuilder.CreatePlane("verticalPanel", { width: 100, height: 40 }, this.scene);
         this.verticalPanel.position.y = 20;
-        this.verticalPanel.visibility = 0.2;
+        this.verticalPanel.visibility = 0.1;
+
+        let drawZone = MeshBuilder.CreateLines("drawZone", { points: [
+            new Vector3(-10, 0, 0),
+            new Vector3(10, 0, 0),
+            new Vector3(10, 40, 0),
+            new Vector3(-10, 40, 0),
+            new Vector3(-10, 0, 0)
+        ]}, this.scene);
     }
     
     public onPointerDown = (evt: PointerEvent) => {
@@ -43,6 +52,7 @@ export class PlayerControl {
             if (pickResult.pickedMesh instanceof PetHitBox) {
                 this._pointerDown = true;
                 this._selectedPet = (pickResult.pickedMesh as PetHitBox).pet;
+                //this._selectedPet.disableCollisions();
                 let invMatrix = new Matrix();
                 pickResult.pickedMesh!.getWorldMatrix().invertToRef(invMatrix);
                 Vector3.TransformCoordinatesToRef(pickResult.pickedPoint!, invMatrix, this._localAnchor);
@@ -57,6 +67,9 @@ export class PlayerControl {
                 this._localAnchor.z = 0;
             }
             else if (pickResult.pickedMesh == this.verticalPanel) {
+                if (pickResult.pickedPoint?.x! < -10 || pickResult.pickedPoint?.x! > 10 || pickResult.pickedPoint?.y! < 0 || pickResult.pickedPoint?.y! > 40) {
+                    return;
+                }
                 this._pointerDown = true;
                 this._pointerDownPos.copyFrom(pickResult.pickedPoint!);
                 this._newBox = new Block("box", this.game);
@@ -94,25 +107,14 @@ export class PlayerControl {
 
     public onPointerUp = (evt: PointerEvent) => {
         if (this._newBox) {
-            let volume = this._newBoxSize.x * this._newBoxSize.y * this._newBoxSize.z;
-            let weight = volume * 0.5; // density = 1
-            const body = new PhysicsBody(this._newBox, PhysicsMotionType.DYNAMIC, false, this.scene);
-            body.setMassProperties({
-                mass: weight
-            });
-            body.shape = new PhysicsShapeBox(
-                new Vector3(0, 0, 0),
-                Quaternion.Identity(),
-                this._newBoxSize,
-                this.scene
-            );
-            body.shape.material = {friction: 0.2, restitution: 0.3};
+            this._newBox.init(this._newBoxSize);
         }
         this._pointerDown = false;
         this._newBox = null;
         if (this._selectedPet) {
             this._selectedPet.physicsBody?.setLinearDamping(0);
             this._selectedPet.physicsBody?.setAngularDamping(0);
+            //this._selectedPet.enableCollisions();
         }
         this._selectedPet = null;
         if (this._selectedBlock) {
@@ -131,18 +133,27 @@ export class PlayerControl {
                 if (this._selectedPet) {
                     let p = Vector3.TransformCoordinates(this._localAnchor, this._selectedPet.getWorldMatrix());
                     let delta = currentPos.subtract(p);
+                    if (delta.length() > 2) {
+                        delta.normalize().scaleInPlace(2);
+                    }
                     this._selectedPet.physicsBody?.setLinearDamping(10);
                     this._selectedPet.physicsBody?.setAngularDamping(5);
                     this._selectedPet.physicsBody?.applyForce(delta.scale(5), p);
+                    
+                    let torque = Vector3.Cross(this._selectedPet.forward, Axis.Z).scale(1);
+                    this._selectedPet.physicsBody?.applyTorque(torque);
                 }
                 else if (this._selectedBlock) {
                     let p = Vector3.TransformCoordinates(this._localAnchor, this._selectedBlock.getWorldMatrix());
                     let delta = currentPos.subtract(p);
+                    if (delta.length() > 2) {
+                        delta.normalize().scaleInPlace(2);
+                    }
                     this._selectedBlock.physicsBody?.setLinearDamping(10);
-                    this._selectedBlock.physicsBody?.setAngularDamping(5);
-                    this._selectedBlock.physicsBody?.applyForce(delta.scale(20), p);
+                    this._selectedBlock.physicsBody?.setAngularDamping(4);
+                    this._selectedBlock.physicsBody?.applyForce(delta.scale(20 * this._selectedBlock.mass), p);
 
-                    let torque = Vector3.Cross(this._selectedBlock.forward, Axis.Z).scale(10);
+                    let torque = Vector3.Cross(this._selectedBlock.forward, Axis.Z).scale(3);
                     this._selectedBlock.physicsBody?.applyTorque(torque);
                 }
             }

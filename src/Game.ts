@@ -9,6 +9,8 @@ import { registerBuiltInLoaders } from "@babylonjs/loaders/dynamic";
 import { Pet, PetHitBox, PETS } from "./Pets";
 import { BaseMaterials } from "./BaseMaterials";
 import { PlayerControl } from "./PlayerControl";
+import { Block } from "./Block";
+import { Ball } from "./Ball";
 registerBuiltInLoaders();
 
 export class Game {
@@ -96,26 +98,73 @@ export class Game {
 
     public generateRandomPets(n?: number): void {
         if (!(n! > 0)) {
-            n = Math.floor(Math.random() * 10) + 1;
+            n = Math.floor(Math.random() * 3) + 1;
         }
         for (let i = 0; i < n!; i++) {
             let petName = PETS[Math.floor(Math.random() * PETS.length)];
             
             let pet = new Pet(petName, this);
             pet.initialize();
-            pet.position.x = 10 - 1 - i;
+            pet.position.x = 11 + i;
             pet.position.y = 1;
 
             this.pets.push(pet);
         }
     }
 
+    public generateRandomBlocks(n?: number): void {
+        if (!(n! > 0)) {
+            n = 4;
+        }
+        for (let i = 0; i < n!; i++) {
+            let s = Math.floor(Math.random() * 4) + 1;
+            
+            let block = new Block("block", this);
+            block.position.x = - 11 - i;
+            block.position.y = 0.5 + s / 2;
+
+            block.init(new Vector3(0.5, s, 1));
+        }
+    }
+
+    public generateRandomBalls(n?: number): void {
+        if (!(n! > 0)) {
+            n = 8;
+        }
+        for (let i = 0; i < n!; i++) {
+            setTimeout(() => {
+                let angle = Math.random() * Math.PI * 0.8 + Math.PI * 0.1;
+                let x = Math.cos(angle) * 20;
+                let y = Math.sin(angle) * 20;
+                let ball = new Ball("ball", this);
+                ball.position.x = x;
+                ball.position.y = y;
+
+                ball.init(0.4);
+
+                let angle2 = angle + (Math.random() * 2 - 1) * Math.PI / 8;
+                let x2 = Math.cos(angle2);
+                let y2 = Math.sin(angle2);
+                ball.physicsBody?.setLinearVelocity(new Vector3(- x2 * 15, - y2 * 15, 0));
+            }, Math.random() * 2000);
+        }
+    }
+
+    private _state = 0;
     public async start(): Promise<void> {
         this.playerControl.canvas.addEventListener("pointerdown", this.playerControl.onPointerDown);
         this.playerControl.canvas.addEventListener("pointermove", this.playerControl.onPointerMove);
         this.playerControl.canvas.addEventListener("pointerup", this.playerControl.onPointerUp);
         document.getElementById("next-btn")?.addEventListener("click", () => {
-            this.generateRandomPets();
+            if (this._state === 0) {
+                this.generateRandomPets();
+                //this.generateRandomBlocks();
+                this._state = 1;
+            }
+            else if (this._state === 1) {
+                this.generateRandomBalls();
+                this._state = 0;
+            }
         });
 
         this.scene.onBeforeRenderObservable.add(this.playerControl.update);
