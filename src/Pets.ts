@@ -35,7 +35,7 @@ export class PetHitBox extends Mesh {
     constructor(public pet: Pet) {
         super(pet.name + "-hitbox", pet.game.scene);
         CreateBoxVertexData({ width: Pet.PetSize, height: Pet.PetSize, depth: Pet.PetSize }).applyToMesh(this);
-        this.visibility = 0.1;
+        this.visibility = 0;
         this.parent = pet;
     }
 }
@@ -81,7 +81,9 @@ export class Pet extends Mesh {
                 mesh.material = this.petMaterial;
             }
         });
+    }
 
+    public async enablePhysics(): Promise<void> {
         let volume = Pet.PetSize * Pet.PetSize * Pet.PetSize;
         let weight = volume * 0.3; // density = 1
         const body = new PhysicsBody(this, PhysicsMotionType.DYNAMIC, false, this.game.scene);
@@ -95,18 +97,9 @@ export class Pet extends Mesh {
             this.game.scene
         );
         body.shape.material = {friction: 0.2, restitution: 0.3};
-        console.log(body.shape.filterCollideMask);
     }
 
-    public disableCollisions(): void {
-        if (this.physicsBody && this.physicsBody.shape) {
-            this.physicsBody.shape.filterCollideMask = 0;
-        }
-    }
-
-    public enableCollisions(): void {
-        if (this.physicsBody && this.physicsBody.shape) {
-            this.physicsBody.shape.filterCollideMask = -1;
-        }
+    public async disablePhysics(): Promise<void> {
+        this.physicsBody?.dispose();
     }
 }

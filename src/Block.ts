@@ -39,5 +39,14 @@ export class Block extends Mesh {
             this.game.scene
         );
         body.shape.material = {friction: 0.4, restitution: 0.5};
+        
+        this.game.scene.onBeforeRenderObservable.add(this._update);
+    }
+
+    private _update = () => {
+        if (this.position.y < -10) {
+            this.game.scene.onBeforeRenderObservable.removeCallback(this._update);
+            this.dispose();
+        }
     }
 }

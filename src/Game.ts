@@ -1,7 +1,7 @@
 import { Scene } from "@babylonjs/core/scene";
 import { Engine } from "@babylonjs/core/Engines/engine";
 import "@babylonjs/core/Culling/ray";
-import { ArcRotateCamera, Color3, CubeTexture, HavokPlugin, HemisphericLight, Mesh, MeshBuilder, PhysicsBody, PhysicsMotionType, PhysicsShapeBox, Quaternion, Ray, StandardMaterial, Texture, Vector2, Vector3 } from "@babylonjs/core";
+import { ArcRotateCamera, Color3, CubeTexture, HavokPlugin, HemisphericLight, Mesh, MeshBuilder, PhysicsBody, PhysicsMotionType, PhysicsShapeBox, PhysicsShapeCylinder, Quaternion, Ray, StandardMaterial, Texture, Vector2, Vector3 } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
 import { CreateBeveledBox, CreateBeveledBoxVertexData } from "babylonjs-extra-meshes-kit";
 import { QuaternionFromYZAxisToRef } from "babylonjs-tiaratumgames-tools";
@@ -11,6 +11,7 @@ import { BaseMaterials } from "./BaseMaterials";
 import { PlayerControl } from "./PlayerControl";
 import { Block } from "./Block";
 import { Ball } from "./Ball";
+import { WinZone } from "./WinZone";
 registerBuiltInLoaders();
 
 export class Game {
@@ -81,17 +82,18 @@ export class Game {
         // enable physics in the scene with a gravity
         this.scene.enablePhysics(new Vector3(0, -9.8, 0), hk);
 
-        this.ground = CreateBeveledBox("ground", { width: 20, height: 1, depth: 20 }, this.scene);
+        this.ground = MeshBuilder.CreateCylinder("ground", { tessellation: 64, diameter: 20, height: 1 }, this.scene);
+        this.ground.position.y = -0.5;
         this.ground.material = this.baseMaterials.green;
 
         const body = new PhysicsBody(this.ground, PhysicsMotionType.STATIC, false, this.scene);
         body.setMassProperties({
             mass: 0
         });
-        body.shape = new PhysicsShapeBox(
-            new Vector3(0, 0, 0),
-            Quaternion.Identity(),
-            new Vector3(20, 1, 20),
+        body.shape = new PhysicsShapeCylinder(
+            new Vector3(0, -0.5, 0),
+            new Vector3(0, 0.5, 0),
+            10,
             this.scene
         );
         body.shape.material = {friction: 0.2, restitution: 0.3};
@@ -99,14 +101,14 @@ export class Game {
 
     public generateRandomPets(n?: number): void {
         if (!(n! > 0)) {
-            n = 2;
+            n = 1;
         }
 
         let minX = -1;
         let maxX = 1;
         this.pets.forEach(pet => {
-            minX = Math.min(minX, pet.position.x - 2);
-            maxX = Math.max(maxX, pet.position.x + 2);
+            minX = Math.min(minX, pet.position.x - 3);
+            maxX = Math.max(maxX, pet.position.x + 3);
         });
         for (let i = 0; i < n!; i++) {
             let petName = PETS[Math.floor(Math.random() * PETS.length)];
@@ -118,11 +120,13 @@ export class Game {
             let pickResult = this.scene.pickWithRay(ray, (mesh) => { return mesh instanceof Block || mesh instanceof PetHitBox || mesh == this.ground });
             if (pickResult?.hit) {
                 pet.position.copyFrom(pickResult.pickedPoint!);
-                pet.position.y += Pet.PetSize / 2 + 0.01;
+                pet.position.y += Pet.PetSize / 2 + 0.01 + 3 * Math.random();
             }
             else {
                 pet.position.set(x, Pet.PetSize / 2 + 0.01, 0);
             }
+
+            new WinZone(pet.position.subtract(new Vector3(1, 1, 1)), pet.position.add(new Vector3(1, 1, 1)), this);
 
             this.pets.push(pet);
         }
@@ -145,7 +149,7 @@ export class Game {
 
     public generateRandomBalls(n?: number): void {
         if (!(n! > 0)) {
-            n = 8;
+            n = 16;
         }
         for (let i = 0; i < n!; i++) {
             setTimeout(() => {
@@ -156,7 +160,7 @@ export class Game {
                 ball.position.x = x;
                 ball.position.y = y;
 
-                ball.init(0.25 + 0.1 * Math.random());
+                ball.init(0.15 + 0.25 * Math.random());
 
                 let angle2 = angle + (Math.random() * 2 - 1) * Math.PI / 8;
                 let x2 = Math.cos(angle2);
@@ -178,6 +182,7 @@ export class Game {
                 this._state = 1;
             }
             else if (this._state === 1) {
+                this.pets.forEach(pet => pet.enablePhysics());
                 this.generateRandomBalls();
                 Block.Width *= 0.9;
                 this._state = 0;
