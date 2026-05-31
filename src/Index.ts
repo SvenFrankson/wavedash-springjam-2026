@@ -21,5 +21,11 @@ score.id = 'score';
 score.textContent = '00000';
 app.appendChild(score);
 
+/*
+const Wavedash = await (window as any).Wavedash;
+Wavedash.updateLoadProgressZeroToOne(1);
+Wavedash.init({ debug: true });
+*/
+
 const game = new Game(canvas);
 game.initAndStart();

@@ -1,5 +1,4 @@
-import { Color3, CreateBoxVertexData, Mesh, MeshBuilder, PhysicsBody, PhysicsMotionType, PhysicsShapeBox, Quaternion, SceneLoader, StandardMaterial, Texture, Vector3, VertexData } from "@babylonjs/core";
-import { ScaleVertexDataInPlace } from "babylonjs-tiaratumgames-tools";
+import { Mesh, PhysicsBody, PhysicsMotionType, PhysicsShapeBox, Quaternion, Vector3 } from "@babylonjs/core";
 import { Game } from "./Game";
 import { BaseMaterials } from "./BaseMaterials";
 import { CreateBeveledBoxVertexData } from "babylonjs-extra-meshes-kit";

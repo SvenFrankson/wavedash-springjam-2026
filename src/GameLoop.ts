@@ -1,5 +1,8 @@
+import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { Block } from "./Block";
 import { Game } from "./Game";
+import { Pet } from "./Pets";
+import { RandomThankYou, ToonSoundType, Wait } from "./ToonSound";
 
 export class GameLoop {
 
@@ -14,7 +17,7 @@ export class GameLoop {
     }
 
     private _updating = false;
-    public update = () => {
+    public update = async () => {
         console.log(this.state);
         if (this._updating || this.state === -1) {
             return;
@@ -42,11 +45,21 @@ export class GameLoop {
         }
         else if (this.state === 4) {
             let gain = 0;
-            this.game.pets.forEach(pet => {
+            for (let pet of this.game.pets) {
                 if (pet && !pet.isDisposed()) {
                     gain += 5 + Math.floor(pet.position.y / 10);
+                    this.game.toonSoundManager.start({
+                        text: RandomThankYou(),
+                        pos: pet.position.add(new Vector3(Pet.PetSize * 0.5, Pet.PetSize * 0.5, 0)),
+                        color: "#FFFFFF",
+                        size: 0.5,
+                        duration: 1,
+                        type: ToonSoundType.Poc
+                    });
+                    await Wait(300);
                 }
-            });
+            }
+            await Wait(300);
             this.game.score += gain;
             this.state = 5;
         }

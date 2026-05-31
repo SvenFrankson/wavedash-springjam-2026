@@ -1,7 +1,5 @@
-import { Color3, CreateBoxVertexData, CreateSphereVertexData, Mesh, MeshBuilder, PhysicsBody, PhysicsMotionType, PhysicsShapeBox, PhysicsShapeSphere, Quaternion, SceneLoader, StandardMaterial, Texture, Vector3, VertexData } from "@babylonjs/core";
-import { ScaleVertexDataInPlace } from "babylonjs-tiaratumgames-tools";
+import { Mesh } from "@babylonjs/core";
 import { Game } from "./Game";
-import { BaseMaterials } from "./BaseMaterials";
 import { CreateBeveledBoxVertexData } from "babylonjs-extra-meshes-kit";
 import { Pet } from "./Pets";
 
@@ -26,9 +24,5 @@ export class WinZone extends Mesh {
         if (this.pet && !this.pet.isDisposed()) {
             this.pet.dispose();
         }
-    }
-
-    private _update = () => {
-        
     }
 }

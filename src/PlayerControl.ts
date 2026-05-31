@@ -1,7 +1,6 @@
-import { Vector3, Mesh, Quaternion, PhysicsBody, PhysicsMotionType, PhysicsShapeBox, MeshBuilder, Matrix, Axis } from "@babylonjs/core";
+import { Vector3, Mesh, MeshBuilder, Matrix, Axis } from "@babylonjs/core";
 import { CreateBeveledBoxVertexData } from "babylonjs-extra-meshes-kit";
 import { QuaternionFromYZAxisToRef } from "babylonjs-tiaratumgames-tools";
-import { BaseMaterials } from "./BaseMaterials";
 import { Game } from "./Game";
 import { Pet, PetHitBox } from "./Pets";
 import { Block } from "./Block";
@@ -33,7 +32,7 @@ export class PlayerControl {
         this.verticalPanel.position.y = 20;
         this.verticalPanel.visibility = 0.1;
 
-        let drawZone = MeshBuilder.CreateLines("drawZone", { points: [
+        MeshBuilder.CreateLines("drawZone", { points: [
             new Vector3(-10, 0, 0),
             new Vector3(10, 0, 0),
             new Vector3(10, 40, 0),
@@ -42,7 +41,7 @@ export class PlayerControl {
         ]}, this.scene);
     }
     
-    public onPointerDown = (evt: PointerEvent) => {
+    public onPointerDown = () => {
         let pickResult = this.scene.pick(this.scene.pointerX, this.scene.pointerY, (mesh) => { return mesh instanceof PetHitBox || mesh instanceof Block; });
         if (!pickResult?.hit) {
             pickResult = this.scene.pick(this.scene.pointerX, this.scene.pointerY, (mesh) => { return mesh == this.verticalPanel; });
@@ -80,7 +79,7 @@ export class PlayerControl {
         }
     }
 
-    public onPointerMove = (evt: PointerEvent) => {
+    public onPointerMove = () => {
         if (!this._pointerDown) {
             return;
         }
@@ -105,7 +104,7 @@ export class PlayerControl {
         }
     }
 
-    public onPointerUp = (evt: PointerEvent) => {
+    public onPointerUp = () => {
         if (this._newBox) {
             this._newBox.init(this._newBoxSize);
         }

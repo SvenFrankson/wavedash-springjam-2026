@@ -1,10 +1,8 @@
 import { Scene } from "@babylonjs/core/scene";
 import { Engine } from "@babylonjs/core/Engines/engine";
 import "@babylonjs/core/Culling/ray";
-import { ArcRotateCamera, Color3, CubeTexture, HavokPlugin, HemisphericLight, Mesh, MeshBuilder, PhysicsBody, PhysicsMotionType, PhysicsShapeBox, PhysicsShapeCylinder, Quaternion, Ray, StandardMaterial, Texture, Vector2, Vector3 } from "@babylonjs/core";
+import { ArcRotateCamera, Color3, CubeTexture, HavokPlugin, HemisphericLight, Mesh, MeshBuilder, PhysicsBody, PhysicsMotionType, PhysicsShapeCylinder, Ray, StandardMaterial, Texture, Vector3 } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
-import { CreateBeveledBox, CreateBeveledBoxVertexData } from "babylonjs-extra-meshes-kit";
-import { DrawDebugPoint, QuaternionFromYZAxisToRef } from "babylonjs-tiaratumgames-tools";
 import { registerBuiltInLoaders } from "@babylonjs/loaders/dynamic";
 import { Pet, PetHitBox, PETS } from "./Pets";
 import { BaseMaterials } from "./BaseMaterials";
@@ -13,6 +11,7 @@ import { Block } from "./Block";
 import { Ball } from "./Ball";
 import { WinZone } from "./WinZone";
 import { GameLoop } from "./GameLoop";
+import { ToonSoundManager, ToonSoundType } from "./ToonSound";
 registerBuiltInLoaders();
 
 export class Game {
@@ -27,6 +26,7 @@ export class Game {
     public playerControl: PlayerControl;
 
     public baseMaterials: BaseMaterials;
+    public toonSoundManager: ToonSoundManager;
 
     public scoreElement: HTMLDivElement;
 
@@ -66,6 +66,7 @@ export class Game {
         this.skybox.material = skyboxMaterial;
 
         this.baseMaterials = new BaseMaterials(this);
+        this.toonSoundManager = new ToonSoundManager(this);
 
         this.playerControl = new PlayerControl(this);
 
@@ -125,6 +126,10 @@ export class Game {
                 }
             }
         });
+
+        if (this.toonSoundManager) {
+            this.toonSoundManager.update(this.scene.getEngine().getDeltaTime() / 1000);
+        }
     }
 
     public generateRandomPets(n?: number): void {
@@ -134,13 +139,13 @@ export class Game {
 
         let maxDH = 0;
         if (this.pets.size > 0) {
-            maxDH = Math.min(this.level - 1, 3);
+            maxDH = Math.min(this.level, 5);
         }
         let minX = -1;
         let maxX = 1;
         this.pets.forEach(pet => {
-            minX = Math.min(minX, pet.position.x - 3);
-            maxX = Math.max(maxX, pet.position.x + 3);
+            minX = Math.min(minX, pet.position.x - 2);
+            maxX = Math.max(maxX, pet.position.x + 2);
         });
         for (let i = 0; i < n!; i++) {
             let petName = PETS[Math.floor(Math.random() * PETS.length)];
@@ -160,6 +165,15 @@ export class Game {
             }
 
             new WinZone(pet, this);
+
+            this.toonSoundManager.start({
+                text: "HELLO !",
+                pos: pet.position.add(new Vector3(Pet.PetSize * 0.5, Pet.PetSize * 0.5, 0)),
+                color: "#FFFFFF",
+                size: 0.5,
+                duration: 1,
+                type: ToonSoundType.Poc
+            });
         }
     }
 
