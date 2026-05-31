@@ -23,7 +23,7 @@ export class WinZone extends Mesh {
     public dispose(): void {
         super.dispose();
         this.game.winzones.delete(this);
-        if (this.pet && !this.pet.isDisposed) {
+        if (this.pet && !this.pet.isDisposed()) {
             this.pet.dispose();
         }
     }

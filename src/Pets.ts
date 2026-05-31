@@ -113,7 +113,7 @@ export class Pet extends Mesh {
         super.dispose();
         this.game.pets.delete(this);
         this.hitBox.dispose();
-        if (this.winzone && !this.winzone.isDisposed) {
+        if (this.winzone && !this.winzone.isDisposed()) {
             this.winzone.dispose();
         }
     }

@@ -16,5 +16,10 @@ nextBtn.id = 'next-btn';
 nextBtn.textContent = 'Next';
 app.appendChild(nextBtn);
 
+const score = document.createElement('div');
+score.id = 'score';
+score.textContent = '00000';
+app.appendChild(score);
+
 const game = new Game(canvas);
 game.initAndStart();

@@ -12,6 +12,7 @@ import { PlayerControl } from "./PlayerControl";
 import { Block } from "./Block";
 import { Ball } from "./Ball";
 import { WinZone } from "./WinZone";
+import { GameLoop } from "./GameLoop";
 registerBuiltInLoaders();
 
 export class Game {
@@ -27,9 +28,14 @@ export class Game {
 
     public baseMaterials: BaseMaterials;
 
+    public scoreElement: HTMLDivElement;
+
     public level: number = 1;
+    private _score: number = 0;
+    public gameLoop: GameLoop;
     public pets: Set<Pet> = new Set();
     public winzones: Set<WinZone> = new Set();
+    public balls: Set<Ball> = new Set();
 
     constructor(public canvas: HTMLCanvasElement) {
         Game.Instance = this;
@@ -62,6 +68,10 @@ export class Game {
         this.baseMaterials = new BaseMaterials(this);
 
         this.playerControl = new PlayerControl(this);
+
+        this.gameLoop = new GameLoop(this);
+
+        this.scoreElement = document.getElementById("score") as HTMLDivElement;
 
         window.addEventListener("resize", () => {
             this.onResize();
@@ -104,7 +114,10 @@ export class Game {
 
     public update = () => {
         this.pets.forEach(pet => {
-            if (pet.winzone) {
+            if (Math.abs(pet.position.z) > 1) {
+                pet.dispose();
+            }
+            else if (pet.winzone) {
                 let dx = pet.position.x - pet.winzone.position.x;
                 let dy = pet.position.y - pet.winzone.position.y;
                 if (Math.abs(dx) > pet.winzone.halfSize || Math.abs(dy) > pet.winzone.halfSize) {
@@ -188,40 +201,26 @@ export class Game {
         }
     }
 
-    private _state = 0;
     public async start(): Promise<void> {
         this.playerControl.canvas.addEventListener("pointerdown", this.playerControl.onPointerDown);
         this.playerControl.canvas.addEventListener("pointermove", this.playerControl.onPointerMove);
         this.playerControl.canvas.addEventListener("pointerup", this.playerControl.onPointerUp);
-        document.getElementById("next-btn")?.addEventListener("click", () => {
-            if (this._state === 0) {
-                this.generateRandomPets();
-                //this.generateRandomBlocks();
-                this._state = 1;
-            }
-            else if (this._state === 1) {
-                this.pets.forEach(pet => pet.enablePhysics());
-                this.generateRandomBalls();
-                Block.Width *= 0.9;
-                this._state = 0;
-                Block.MaterialIndex++;
-                this.level++;
-            }
-        });
-
-        setTimeout(() => {
-            this.level = 1;
-            this.generateRandomPets();
-            //this.generateRandomBlocks();
-            this._state = 1;
-        }, 200);
 
         this.scene.onBeforeRenderObservable.add(this.update);
+        this.scene.onBeforeRenderObservable.add(this.gameLoop.update);
         this.scene.onBeforeRenderObservable.add(this.playerControl.update);
 
         this.engine.runRenderLoop(() => {
             this.scene.render()
         })
+    }
+
+    public get score(): number {
+        return this._score;
+    }
+    public set score(value: number) {
+        this._score = value;
+        this.scoreElement.textContent = value.toString().padStart(5, '0');
     }
 
     public onResize() {

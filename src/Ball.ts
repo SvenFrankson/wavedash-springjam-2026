@@ -15,6 +15,7 @@ export class Ball extends Mesh {
 
     constructor(public petName: string, public game: Game) {
         super(petName);
+        this.game.balls.add(this);
         this.material = this.game.baseMaterials.black;
         BaseMaterials.MakeOutline(this);
     }
@@ -33,7 +34,7 @@ export class Ball extends Mesh {
             this.radius,
             this.game.scene
         );
-        body.shape.material = {friction: 0.1, restitution: 0.9};
+        body.shape.material = {friction: 0.1, restitution: 0.7};
 
         this.game.scene.onBeforeRenderObservable.add(this._update);
     }
@@ -42,14 +43,21 @@ export class Ball extends Mesh {
         this._lifetime += this.game.scene.getEngine().getDeltaTime() / 1000;
         if (this._lifetime > 3) {
             let f = this.position.clone();
-            f.x = 0;
             f.y = 0;
             f.normalize().scaleInPlace(0.2 * (this._lifetime - 3));
             this.physicsBody?.applyForce(f, Vector3.Zero());
         }
-        if (this._lifetime > 10) {
-            this.game.scene.onBeforeRenderObservable.removeCallback(this._update);
+        if (this._lifetime > 8) {
             this.dispose();
         }
+        if (this.position.y < -5) {
+            this.dispose();
+        }
+    }
+
+    public dispose(): void {
+        super.dispose();
+        this.game.scene.onBeforeRenderObservable.removeCallback(this._update);
+        this.game.balls.delete(this);
     }
 }
