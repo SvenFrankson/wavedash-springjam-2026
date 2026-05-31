@@ -6,6 +6,7 @@ import { CreateBeveledBoxVertexData } from "babylonjs-extra-meshes-kit";
 
 export class Ball extends Mesh {
 
+    private _lifetime = 0;
     public radius: number = 0.5;
     public density: number = 0.5;
     public get mass() {
@@ -32,6 +33,23 @@ export class Ball extends Mesh {
             this.radius,
             this.game.scene
         );
-        body.shape.material = {friction: 0.1, restitution: 0.5};
+        body.shape.material = {friction: 0.1, restitution: 0.9};
+
+        this.game.scene.onBeforeRenderObservable.add(this._update);
+    }
+
+    private _update = () => {
+        this._lifetime += this.game.scene.getEngine().getDeltaTime() / 1000;
+        if (this._lifetime > 3) {
+            let f = this.position.clone();
+            f.x = 0;
+            f.y = 0;
+            f.normalize().scaleInPlace(0.2 * (this._lifetime - 3));
+            this.physicsBody?.applyForce(f, Vector3.Zero());
+        }
+        if (this._lifetime > 10) {
+            this.game.scene.onBeforeRenderObservable.removeCallback(this._update);
+            this.dispose();
+        }
     }
 }

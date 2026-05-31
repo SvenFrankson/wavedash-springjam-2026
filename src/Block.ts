@@ -6,6 +6,10 @@ import { CreateBeveledBoxVertexData } from "babylonjs-extra-meshes-kit";
 
 export class Block extends Mesh {
 
+    public static MaterialIndex = 0;
+    public static Width = 0.4;
+    public static Depth = 1;
+
     public size: Vector3 = Vector3.One();
     public density: number = 0.5;
     public get mass() {
@@ -14,7 +18,8 @@ export class Block extends Mesh {
 
     constructor(public petName: string, public game: Game) {
         super(petName);
-        this.material = this.game.baseMaterials.red;
+        this.rotationQuaternion = Quaternion.Identity();
+        this.material = this.game.baseMaterials.materials[Block.MaterialIndex % this.game.baseMaterials.materials.length];
         BaseMaterials.MakeOutline(this);
     }
 
@@ -33,6 +38,6 @@ export class Block extends Mesh {
             this.size,
             this.game.scene
         );
-        body.shape.material = {friction: 0.2, restitution: 0.3};
+        body.shape.material = {friction: 0.4, restitution: 0.5};
     }
 }

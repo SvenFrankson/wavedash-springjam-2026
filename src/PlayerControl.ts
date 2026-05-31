@@ -73,11 +73,8 @@ export class PlayerControl {
                 this._pointerDown = true;
                 this._pointerDownPos.copyFrom(pickResult.pickedPoint!);
                 this._newBox = new Block("box", this.game);
-                BaseMaterials.MakeOutline(this._newBox);
-                this._newBox.material = this.game.baseMaterials.red;
-                this._newBox.rotationQuaternion = Quaternion.Identity();
                 this._newBox.position.copyFrom(this._pointerDownPos);
-                let vData = CreateBeveledBoxVertexData({ width: 0.5, height: 0.5, depth: 1 });
+                let vData = CreateBeveledBoxVertexData({ width: Block.Width, height: 0.5, depth: Block.Depth });
                 vData.applyToMesh(this._newBox!);
             }
         }
@@ -95,10 +92,13 @@ export class PlayerControl {
                 let center = Vector3.Center(this._pointerDownPos, currentPos);
                 let size = currentPos.subtract(this._pointerDownPos).length();
                 size = Math.max(size, 0.5);
-                size = Math.round(size * 2) / 2;
+                size = Math.round(size / Block.Width) * Block.Width;
+                size = Math.min(size, 16 * Block.Width);
                 this._newBox!.position.copyFrom(center);
+                this._newBoxSize.x = Block.Width;
                 this._newBoxSize.y = size;
-                let vData = CreateBeveledBoxVertexData({ width: 0.5, height: size, depth: 1 });
+                this._newBoxSize.z = Block.Depth;
+                let vData = CreateBeveledBoxVertexData({ width: Block.Width, height: size, depth: Block.Depth });
                 vData.applyToMesh(this._newBox!);
                 QuaternionFromYZAxisToRef(dir.normalize(), Vector3.Forward(), this._newBox!.rotationQuaternion!);
             }

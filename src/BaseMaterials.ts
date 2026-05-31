@@ -29,6 +29,18 @@ export class BaseMaterials {
         this.blue = this._makeMaterial("blue", "#34bbe6");
         this.marine = this._makeMaterial("marine", "#4355db");
         this.pink = this._makeMaterial("pink", "#d23be7");
+
+        this.materials = [
+            this.red,
+            this.orange,
+            this.yellow,
+            this.green,
+            this.teal,
+            this.blue,
+            this.marine,
+            this.pink,
+            this.white
+        ];
     }
 
     public static MakeOutline(m: Mesh): void {
