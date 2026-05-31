@@ -44,25 +44,21 @@ export class Game {
         this.scene = new Scene(this.engine);
         this.scene.clearColor.set(0, 0, 1, 1);
         this.camera = new ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2, 20, new Vector3(0, 5, 0), this.scene);
-        this.camera.attachControl(canvas, true);
+        //this.camera.attachControl(canvas, true);
         let light = new HemisphericLight("light", new Vector3(1, 3, -2), this.scene);
         light.direction = (new Vector3(2, 1, -1.5)).normalize();
         light.intensity = 0.7;
 		Engine.ShadersRepository = "./public/shaders/";
 
-        this.skybox = MeshBuilder.CreateBox("skyBox", { size: 1500 }, this.scene);
-        this.skybox.rotation.x = Math.PI / 8;
-        let skyboxMaterial: StandardMaterial = new StandardMaterial("skyBox", this.scene);
+        this.skybox = MeshBuilder.CreateSphere("room-skybox", { diameter: 1000, sideOrientation: Mesh.BACKSIDE, segments: 4 }, this.scene);
+        this.skybox.rotation.y = Math.PI;
+        let skyboxMaterial = new StandardMaterial("room-skybox-material", this.scene);
         skyboxMaterial.backFaceCulling = false;
-        let skyTexture = new CubeTexture(
-            "skyboxes/cloud",
-            this.scene,
-            ["-px.jpg", "-py.jpg", "-pz.jpg", "-nx.jpg", "-ny.jpg", "-nz.jpg"]);
-        skyboxMaterial.reflectionTexture = skyTexture;
-        skyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
-        skyboxMaterial.diffuseColor = new Color3(0, 0, 0);
+        skyboxMaterial.diffuseColor.copyFromFloats(0, 0, 0);
         skyboxMaterial.specularColor = new Color3(0, 0, 0);
-        skyboxMaterial.emissiveColor = new Color3(0.3, 0.3, 0.4);
+        let skyTexture = new Texture("skyboxes/sky_toon.jpeg", this.scene);
+        skyboxMaterial.diffuseTexture = skyTexture;
+        skyboxMaterial.emissiveTexture = skyTexture;
         this.skybox.material = skyboxMaterial;
 
         this.baseMaterials = new BaseMaterials(this);
@@ -139,7 +135,7 @@ export class Game {
 
         let maxDH = 0;
         if (this.pets.size > 0) {
-            maxDH = Math.min(this.level, 5);
+            maxDH = Math.min(this.level, 4);
         }
         let minX = -1;
         let maxX = 1;

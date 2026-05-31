@@ -42,6 +42,7 @@ export class GameLoop {
             if (this.game.balls.size === 0) {
                 this.state = 4;
             }
+            await Wait(150);
         }
         else if (this.state === 4) {
             let gain = 0;
@@ -52,11 +53,20 @@ export class GameLoop {
                         text: RandomThankYou(),
                         pos: pet.position.add(new Vector3(Pet.PetSize * 0.5, Pet.PetSize * 0.5, 0)),
                         color: "#FFFFFF",
-                        size: 0.5,
+                        size: 0.4,
                         duration: 1,
                         type: ToonSoundType.Poc
                     });
-                    await Wait(300);
+                    await Wait(150);
+                    this.game.toonSoundManager.start({
+                        text: "+ " + gain.toFixed(0),
+                        pos: pet.position.add(new Vector3(- Pet.PetSize * 0.5, Pet.PetSize * 0.5, 0)),
+                        color: "#f7d038",
+                        size: 0.8,
+                        duration: 2,
+                        type: ToonSoundType.Poc
+                    });
+                    await Wait(350);
                 }
             }
             await Wait(300);
@@ -64,7 +74,7 @@ export class GameLoop {
             this.state = 5;
         }
         else if (this.state === 5) {
-            Block.Width *= 0.9;
+            Block.Width *= 0.98;
             Block.MaterialIndex++;
             this.game.level++;
             this.state = 0;

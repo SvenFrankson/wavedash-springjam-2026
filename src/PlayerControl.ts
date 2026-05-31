@@ -28,10 +28,11 @@ export class PlayerControl {
     public verticalPanel: Mesh;
     
     constructor(public game: Game) {
-        this.verticalPanel = MeshBuilder.CreatePlane("verticalPanel", { width: 100, height: 40 }, this.scene);
-        this.verticalPanel.position.y = 20;
-        this.verticalPanel.visibility = 0.1;
+        this.verticalPanel = MeshBuilder.CreatePlane("verticalPanel", { width: 100, height: 20 }, this.scene);
+        this.verticalPanel.position.y = 10;
+        this.verticalPanel.visibility = 0;
 
+        /*
         MeshBuilder.CreateLines("drawZone", { points: [
             new Vector3(-10, 0, 0),
             new Vector3(10, 0, 0),
@@ -39,6 +40,7 @@ export class PlayerControl {
             new Vector3(-10, 40, 0),
             new Vector3(-10, 0, 0)
         ]}, this.scene);
+        */
     }
     
     public onPointerDown = () => {
@@ -47,7 +49,6 @@ export class PlayerControl {
             pickResult = this.scene.pick(this.scene.pointerX, this.scene.pointerY, (mesh) => { return mesh == this.verticalPanel; });
         }
         if (pickResult?.hit) {
-            this.camera.detachControl();
             if (pickResult.pickedMesh instanceof PetHitBox) {
                 this._pointerDown = true;
                 this._selectedPet = (pickResult.pickedMesh as PetHitBox).pet;
@@ -121,7 +122,6 @@ export class PlayerControl {
             this._selectedBlock.physicsBody?.setAngularDamping(0);
         }
         this._selectedBlock = null;
-        this.camera.attachControl(this.canvas, true);
     }
 
     public update = () => {
