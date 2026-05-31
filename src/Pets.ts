@@ -2,6 +2,7 @@ import { Color3, CreateBoxVertexData, Mesh, MeshBuilder, PhysicsBody, PhysicsMot
 import { ScaleVertexDataInPlace } from "babylonjs-tiaratumgames-tools";
 import { Game } from "./Game";
 import { BaseMaterials } from "./BaseMaterials";
+import { WinZone } from "./WinZone";
 
 export const PETS = [
     "animal-beaver",
@@ -45,6 +46,7 @@ export class Pet extends Mesh {
     public static PetSize = 0.8;
     public hitBox: Mesh;
     public petMaterial: StandardMaterial;
+    public winzone: WinZone | null = null;
 
     constructor(public petName: string, public game: Game) {
         super(petName);
@@ -55,6 +57,8 @@ export class Pet extends Mesh {
         this.petMaterial.emissiveColor = new Color3(0.5, 0.5, 0.5);
         
         this.hitBox = new PetHitBox(this);
+
+        this.game.pets.add(this);
     }
 
     public async initialize(): Promise<void> {
@@ -84,22 +88,33 @@ export class Pet extends Mesh {
     }
 
     public async enablePhysics(): Promise<void> {
-        let volume = Pet.PetSize * Pet.PetSize * Pet.PetSize;
-        let weight = volume * 0.3; // density = 1
-        const body = new PhysicsBody(this, PhysicsMotionType.DYNAMIC, false, this.game.scene);
-        body.setMassProperties({
-            mass: weight
-        });
-        body.shape = new PhysicsShapeBox(
-            new Vector3(0, 0, 0),
-            Quaternion.Identity(),
-            new Vector3(Pet.PetSize, Pet.PetSize, Pet.PetSize),
-            this.game.scene
-        );
-        body.shape.material = {friction: 0.2, restitution: 0.3};
+        if (!this.physicsBody || this.physicsBody.isDisposed) {
+            let volume = Pet.PetSize * Pet.PetSize * Pet.PetSize;
+            let weight = volume * 0.3; // density = 1
+            const body = new PhysicsBody(this, PhysicsMotionType.DYNAMIC, false, this.game.scene);
+            body.setMassProperties({
+                mass: weight
+            });
+            body.shape = new PhysicsShapeBox(
+                new Vector3(0, 0, 0),
+                Quaternion.Identity(),
+                new Vector3(Pet.PetSize, Pet.PetSize, Pet.PetSize),
+                this.game.scene
+            );
+            body.shape.material = {friction: 0.2, restitution: 0.3};
+        }
     }
 
     public async disablePhysics(): Promise<void> {
         this.physicsBody?.dispose();
+    }
+
+    public dispose(): void {
+        super.dispose();
+        this.game.pets.delete(this);
+        this.hitBox.dispose();
+        if (this.winzone && !this.winzone.isDisposed) {
+            this.winzone.dispose();
+        }
     }
 }

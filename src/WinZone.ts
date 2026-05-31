@@ -7,15 +7,25 @@ import { Pet } from "./Pets";
 
 export class WinZone extends Mesh {
 
-    public pets: Pet[] = [];
+    public halfSize: number = 1;
 
-    constructor(public min: Vector3, public max: Vector3, public game: Game) {
+    constructor(public pet: Pet, public game: Game) {
         super("winZone");
-        CreateBeveledBoxVertexData({ width: this.max.x - this.min.x, height: this.max.y - this.min.y, depth: 0.5 }).applyToMesh(this);
-        this.position.copyFrom(this.min).addInPlace(this.max).scaleInPlace(0.5);
+        pet.winzone = this;
+        this.game.winzones.add(this);
+        CreateBeveledBoxVertexData({ width: this.halfSize * 2, height: this.halfSize * 2, depth: 0.5 }).applyToMesh(this);
+        this.position.copyFrom(this.pet.position);
         this.position.z = 0.25;
         this.visibility = 0.3;
         this.material = this.game.baseMaterials.yellow;
+    }
+
+    public dispose(): void {
+        super.dispose();
+        this.game.winzones.delete(this);
+        if (this.pet && !this.pet.isDisposed) {
+            this.pet.dispose();
+        }
     }
 
     private _update = () => {

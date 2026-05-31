@@ -4,7 +4,7 @@ import "@babylonjs/core/Culling/ray";
 import { ArcRotateCamera, Color3, CubeTexture, HavokPlugin, HemisphericLight, Mesh, MeshBuilder, PhysicsBody, PhysicsMotionType, PhysicsShapeBox, PhysicsShapeCylinder, Quaternion, Ray, StandardMaterial, Texture, Vector2, Vector3 } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
 import { CreateBeveledBox, CreateBeveledBoxVertexData } from "babylonjs-extra-meshes-kit";
-import { QuaternionFromYZAxisToRef } from "babylonjs-tiaratumgames-tools";
+import { DrawDebugPoint, QuaternionFromYZAxisToRef } from "babylonjs-tiaratumgames-tools";
 import { registerBuiltInLoaders } from "@babylonjs/loaders/dynamic";
 import { Pet, PetHitBox, PETS } from "./Pets";
 import { BaseMaterials } from "./BaseMaterials";
@@ -26,7 +26,10 @@ export class Game {
     public playerControl: PlayerControl;
 
     public baseMaterials: BaseMaterials;
-    public pets: Pet[] = [];
+
+    public level: number = 1;
+    public pets: Set<Pet> = new Set();
+    public winzones: Set<WinZone> = new Set();
 
     constructor(public canvas: HTMLCanvasElement) {
         Game.Instance = this;
@@ -99,11 +102,27 @@ export class Game {
         body.shape.material = {friction: 0.2, restitution: 0.3};
     }
 
+    public update = () => {
+        this.pets.forEach(pet => {
+            if (pet.winzone) {
+                let dx = pet.position.x - pet.winzone.position.x;
+                let dy = pet.position.y - pet.winzone.position.y;
+                if (Math.abs(dx) > pet.winzone.halfSize || Math.abs(dy) > pet.winzone.halfSize) {
+                    pet.dispose();
+                }
+            }
+        });
+    }
+
     public generateRandomPets(n?: number): void {
         if (!(n! > 0)) {
             n = 1;
         }
 
+        let maxDH = 0;
+        if (this.pets.size > 0) {
+            maxDH = Math.min(this.level - 1, 3);
+        }
         let minX = -1;
         let maxX = 1;
         this.pets.forEach(pet => {
@@ -113,22 +132,21 @@ export class Game {
         for (let i = 0; i < n!; i++) {
             let petName = PETS[Math.floor(Math.random() * PETS.length)];
             
-            let pet = new Pet(petName, this);
-            pet.initialize();
             let x = Math.random() * (maxX - minX) + minX;
             let ray = new Ray(new Vector3(x, 20, 0), new Vector3(0, -1, 0));
             let pickResult = this.scene.pickWithRay(ray, (mesh) => { return mesh instanceof Block || mesh instanceof PetHitBox || mesh == this.ground });
+
+            let pet = new Pet(petName, this);
+            pet.initialize();
             if (pickResult?.hit) {
                 pet.position.copyFrom(pickResult.pickedPoint!);
-                pet.position.y += Pet.PetSize / 2 + 0.01 + 3 * Math.random();
+                pet.position.y += Pet.PetSize / 2 + 0.01 + maxDH * Math.random();
             }
             else {
                 pet.position.set(x, Pet.PetSize / 2 + 0.01, 0);
             }
 
-            new WinZone(pet.position.subtract(new Vector3(1, 1, 1)), pet.position.add(new Vector3(1, 1, 1)), this);
-
-            this.pets.push(pet);
+            new WinZone(pet, this);
         }
     }
 
@@ -149,7 +167,7 @@ export class Game {
 
     public generateRandomBalls(n?: number): void {
         if (!(n! > 0)) {
-            n = 16;
+            n = 2 * this.level;
         }
         for (let i = 0; i < n!; i++) {
             setTimeout(() => {
@@ -187,9 +205,18 @@ export class Game {
                 Block.Width *= 0.9;
                 this._state = 0;
                 Block.MaterialIndex++;
+                this.level++;
             }
         });
 
+        setTimeout(() => {
+            this.level = 1;
+            this.generateRandomPets();
+            //this.generateRandomBlocks();
+            this._state = 1;
+        }, 200);
+
+        this.scene.onBeforeRenderObservable.add(this.update);
         this.scene.onBeforeRenderObservable.add(this.playerControl.update);
 
         this.engine.runRenderLoop(() => {
