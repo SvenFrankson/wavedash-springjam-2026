@@ -13,13 +13,18 @@ app.appendChild(canvas);
 
 const nextBtn = document.createElement('button');
 nextBtn.id = 'next-btn';
-nextBtn.textContent = 'Next';
+nextBtn.textContent = 'GO !';
 app.appendChild(nextBtn);
 
 const score = document.createElement('div');
 score.id = 'score';
 score.textContent = '00000';
 app.appendChild(score);
+
+const tooltip = document.createElement('div');
+tooltip.id = 'tooltip';
+tooltip.textContent = 'Hello World !';
+app.appendChild(tooltip);
 
 /*
 const Wavedash = await (window as any).Wavedash;

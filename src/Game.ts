@@ -30,6 +30,7 @@ export class Game {
     public toonSoundManager: ToonSoundManager;
 
     public scoreElement: HTMLDivElement;
+    public tooltipElement: HTMLDivElement;
 
     public level: number = 1;
     private _score: number = 0;
@@ -70,7 +71,7 @@ export class Game {
         this.gameLoop = new GameLoop(this);
 
         this.scoreElement = document.getElementById("score") as HTMLDivElement;
-
+        this.tooltipElement = document.getElementById("tooltip") as HTMLDivElement;
         window.addEventListener("resize", () => {
             this.onResize();
         });
@@ -136,7 +137,7 @@ export class Game {
 
         let maxDH = 0;
         if (this.pets.size > 0) {
-            maxDH = Math.min(this.level, 4);
+            maxDH = Math.min(this.level * 0.5, 2);
         }
         let minX = -1;
         let maxX = 1;
@@ -149,7 +150,7 @@ export class Game {
             
             let x = Math.random() * (maxX - minX) + minX;
             let ray = new Ray(new Vector3(x, 20, 0), new Vector3(0, -1, 0));
-            let pickResult = this.scene.pickWithRay(ray, (mesh) => { return mesh instanceof Block || mesh instanceof PetHitBox || mesh == this.ground });
+            let pickResult = this.scene.pickWithRay(ray, (mesh) => { return mesh instanceof Block || mesh instanceof PetHitBox || mesh == this.ground || mesh instanceof WinZone });
 
             let pet = new Pet(petName, this);
             pet.initialize();
@@ -160,6 +161,8 @@ export class Game {
             else {
                 pet.position.set(x, Pet.PetSize / 2 + 0.01, 0);
             }
+            pet.position.minimizeInPlace(new Vector3(9, 19, 0));
+            pet.position.maximizeInPlace(new Vector3(-9, 0, 0));
 
             new WinZone(pet, this);
 
@@ -232,6 +235,11 @@ export class Game {
     public set score(value: number) {
         this._score = value;
         this.scoreElement.textContent = value.toString().padStart(5, '0');
+    }
+
+    public showTooltip(text: string): void {
+        this.tooltipElement.textContent = text;
+        this.tooltipElement.style.opacity = "1";
     }
 
     public onResize() {
