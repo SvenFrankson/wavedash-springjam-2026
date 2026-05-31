@@ -12,6 +12,7 @@ import { Ball } from "./Ball";
 import { WinZone } from "./WinZone";
 import { GameLoop } from "./GameLoop";
 import { ToonSoundManager, ToonSoundType } from "./ToonSound";
+import { CreateBeveledCylinder } from "babylonjs-extra-meshes-kit";
 registerBuiltInLoaders();
 
 export class Game {
@@ -92,7 +93,7 @@ export class Game {
         // enable physics in the scene with a gravity
         this.scene.enablePhysics(new Vector3(0, -9.8, 0), hk);
 
-        this.ground = MeshBuilder.CreateCylinder("ground", { tessellation: 64, diameter: 20, height: 1 }, this.scene);
+        this.ground = CreateBeveledCylinder("ground", { tessellation: 64, radius: 10, height: 1 }, this.scene);
         this.ground.position.y = -0.5;
         this.ground.material = this.baseMaterials.green;
 
