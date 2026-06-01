@@ -1,8 +1,23 @@
+import "@babylonjs/core/Culling/ray";
 import { Scene } from "@babylonjs/core/scene";
 import { Engine } from "@babylonjs/core/Engines/engine";
-import "@babylonjs/core/Culling/ray";
-import { ArcRotateCamera, AudioEngineV2, Color3, CreateAudioEngineAsync, CreateSoundAsync, HavokPlugin, HemisphericLight, Mesh, MeshBuilder, PhysicsBody, PhysicsMotionType, PhysicsShapeCylinder, Ray, StandardMaterial, StaticSound, Texture, Vector3 } from "@babylonjs/core";
-import HavokPhysics from "@babylonjs/havok";
+import { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera";
+import { Ray } from "@babylonjs/core/Culling/ray";
+import { AudioEngineV2, CreateSoundAsync } from "@babylonjs/core/AudioV2/abstractAudio/audioEngineV2";
+import { StaticSound } from "@babylonjs/core/AudioV2/abstractAudio/staticSound";
+import { CreateAudioEngineAsync } from "@babylonjs/core/AudioV2/webAudio/webAudioEngine";
+import { Color3 } from "@babylonjs/core/Maths/math.color";
+import { Vector3 } from "@babylonjs/core/Maths/math.vector";
+import { HavokPlugin } from "@babylonjs/core/Physics";
+import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight";
+import { Mesh } from "@babylonjs/core/Meshes/mesh";
+import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder";
+import { PhysicsBody } from "@babylonjs/core/Physics/v2/physicsBody";
+import { PhysicsMotionType } from "@babylonjs/core/Physics/v2/IPhysicsEnginePlugin";
+import { PhysicsShapeCylinder } from "@babylonjs/core/Physics/v2/physicsShape";
+import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
+import { Texture } from "@babylonjs/core/Materials/Textures/texture";
+import HavokPhysics  from "@babylonjs/havok";
 import { registerBuiltInLoaders } from "@babylonjs/loaders/dynamic";
 import { Pet, PetHitBox, PETS } from "./Pets";
 import { BaseMaterials } from "./BaseMaterials";
@@ -12,7 +27,7 @@ import { Ball } from "./Ball";
 import { WinZone } from "./WinZone";
 import { GameLoop } from "./GameLoop";
 import { ToonSoundManager } from "./ToonSound";
-import { CreateBeveledCylinder, CreateBeveledCylinderVertexData } from "babylonjs-extra-meshes-kit";
+import { CreateBeveledCylinder, CreateBeveledCylinderVertexData } from "babylonjs-tiaratumgames-tools";
 import { MyCamera } from "./MyCamera";
 registerBuiltInLoaders();
 
@@ -69,7 +84,7 @@ export class Game {
         skyboxMaterial.backFaceCulling = false;
         skyboxMaterial.diffuseColor.copyFromFloats(0, 0, 0);
         skyboxMaterial.specularColor = new Color3(0, 0, 0);
-        let skyTexture = new Texture("skyboxes/sky_toon.jpeg", this.scene);
+        let skyTexture = new Texture("skyboxes/sky_toon.jpg", this.scene);
         skyboxMaterial.diffuseTexture = skyTexture;
         skyboxMaterial.emissiveTexture = skyTexture;
         this.skybox.material = skyboxMaterial;
@@ -120,8 +135,8 @@ export class Game {
     public async initAndStart(): Promise<void> {
         (async () => {
             this.audioEngine = await CreateAudioEngineAsync();
-            this.createSound = await CreateSoundAsync("create-sound", "sounds/activate.wav", { loop: false, autoplay: false, volume: 0.2 });
-            this.starSound = await CreateSoundAsync("star-sound", "sounds/collect_star.wav", { loop: false, autoplay: false, volume: 0.2 });
+            this.createSound = await CreateSoundAsync("create-sound", "sounds/activate.mp3", { loop: false, autoplay: false, volume: 0.2 });
+            this.starSound = await CreateSoundAsync("star-sound", "sounds/collect_star.mp3", { loop: false, autoplay: false, volume: 0.2 });
         })();
         await this.loadPhysics();
         await this.start();
@@ -145,11 +160,7 @@ export class Game {
     }
 
     public async loadPhysics(): Promise<void> {
-        const havokInstance = await HavokPhysics({
-            locateFile: () => {
-                return "havok/HavokPhysics.wasm"
-            }
-        });
+        const havokInstance = await HavokPhysics();
 
         // pass the engine to the plugin
         const hk = new HavokPlugin(true, havokInstance);
@@ -173,7 +184,7 @@ export class Game {
 
         const m = new StandardMaterial("grass");
         m.diffuseTexture = new Texture("textures/grass.jpg", this.scene);
-        m.emissiveColor.copyFromFloats(0.5, 0.5, 0.5);
+        m.emissiveColor.copyFromFloats(0.2, 0.4, 0.3);
         m.specularColor.copyFromFloats(0, 0, 0);
 
         this.ground.material = m;

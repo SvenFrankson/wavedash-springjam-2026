@@ -1,7 +1,10 @@
 import { Game } from './Game';
 import './style.css';
 
-export var USE_WAVEDASH_SDK = false;
+export var USE_WAVEDASH_SDK = true;
+if (window.location.href.indexOf("localhost") != -1) {
+    USE_WAVEDASH_SDK = false;
+}
 export var Wavedash: any;
 
 const app = document.querySelector<HTMLDivElement>('#app')
@@ -18,6 +21,11 @@ const nextBtn = document.createElement('button');
 nextBtn.id = 'next-btn';
 nextBtn.textContent = 'GO !';
 app.appendChild(nextBtn);
+
+const nextBtnLabel = document.createElement('div');
+nextBtnLabel.id = 'next-btn-label';
+nextBtnLabel.textContent = '- click to start the rain ! -';
+nextBtn.appendChild(nextBtnLabel);
 
 const newGame = document.createElement('button');
 newGame.id = 'newgame-btn';

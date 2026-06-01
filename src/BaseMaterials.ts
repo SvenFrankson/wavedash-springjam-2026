@@ -1,4 +1,7 @@
-import { Color3, Mesh, StandardMaterial } from "@babylonjs/core";
+import { Color3 } from "@babylonjs/core/Maths/math.color";
+import { Mesh } from "@babylonjs/core/Meshes/mesh";
+import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
+import "@babylonjs/core/Rendering/outlineRenderer";
 import type { Game } from "./Game";
 
 export class BaseMaterials {

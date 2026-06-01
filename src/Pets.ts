@@ -1,4 +1,14 @@
-import { Color3, CreateBoxVertexData, Mesh, PhysicsBody, PhysicsMotionType, PhysicsShapeBox, Quaternion, SceneLoader, StandardMaterial, Texture, Vector3, VertexData } from "@babylonjs/core";
+import { Color3 } from "@babylonjs/core/Maths/math.color";
+import { Quaternion, Vector3 } from "@babylonjs/core/Maths/math.vector";
+import { Mesh } from "@babylonjs/core/Meshes/mesh";
+import { CreateBoxVertexData } from "@babylonjs/core/Meshes/Builders/boxBuilder";
+import { VertexData } from "@babylonjs/core/Meshes/mesh.vertexData";
+import { SceneLoader } from "@babylonjs/core/Loading/sceneLoader";
+import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
+import { Texture } from "@babylonjs/core/Materials/Textures/texture";
+import { PhysicsBody } from "@babylonjs/core/Physics/v2/physicsBody";
+import { PhysicsMotionType } from "@babylonjs/core/Physics/v2/IPhysicsEnginePlugin";
+import { PhysicsShapeBox } from "@babylonjs/core/Physics/v2/physicsShape";
 import { AnimationFactory, ScaleVertexDataInPlace } from "babylonjs-tiaratumgames-tools";
 import { Game } from "./Game";
 import { BaseMaterials } from "./BaseMaterials";

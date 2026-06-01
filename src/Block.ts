@@ -1,7 +1,12 @@
-import { Color3, Mesh, PhysicsBody, PhysicsMotionType, PhysicsShapeBox, Quaternion, Vector3 } from "@babylonjs/core";
+import { Color3 } from "@babylonjs/core/Maths/math.color";
+import { Quaternion, Vector3 } from "@babylonjs/core/Maths/math.vector";
+import { Mesh } from "@babylonjs/core/Meshes/mesh";
+import { PhysicsBody } from "@babylonjs/core/Physics/v2/physicsBody";
+import { PhysicsMotionType } from "@babylonjs/core/Physics/v2/IPhysicsEnginePlugin";
+import { PhysicsShapeBox } from "@babylonjs/core/Physics/v2/physicsShape";
 import { Game } from "./Game";
 import { BaseMaterials } from "./BaseMaterials";
-import { CreateBeveledBoxVertexData } from "babylonjs-extra-meshes-kit";
+import { CreateBeveledBoxVertexData } from "babylonjs-tiaratumgames-tools";
 import { Wait } from "./ToonSound";
 
 export class Block extends Mesh {

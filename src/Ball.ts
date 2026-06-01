@@ -1,4 +1,9 @@
-import { CreateSphereVertexData, Mesh, PhysicsBody, PhysicsMotionType, PhysicsShapeSphere, Vector3 } from "@babylonjs/core";
+import { Vector3 } from "@babylonjs/core/Maths/math.vector";
+import { Mesh } from "@babylonjs/core/Meshes/mesh";
+import { CreateSphereVertexData } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
+import { PhysicsBody } from "@babylonjs/core/Physics/v2/physicsBody";
+import { PhysicsMotionType } from "@babylonjs/core/Physics/v2/IPhysicsEnginePlugin";
+import { PhysicsShapeSphere } from "@babylonjs/core/Physics/v2/physicsShape";
 import { Game } from "./Game";
 import { BaseMaterials } from "./BaseMaterials";
 

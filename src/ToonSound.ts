@@ -1,4 +1,9 @@
-import { Vector3, Mesh, DynamicTexture, CreateGroundVertexData, Quaternion, StandardMaterial, Axis } from "@babylonjs/core";
+import { Axis } from "@babylonjs/core/Maths/math.axis";
+import { Quaternion, Vector3 } from "@babylonjs/core/Maths/math.vector";
+import { Mesh } from "@babylonjs/core/Meshes/mesh";
+import { CreateGroundVertexData } from "@babylonjs/core/Meshes/Builders/groundBuilder";
+import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
+import { DynamicTexture } from "@babylonjs/core/Materials/Textures/dynamicTexture";
 import { Game } from "./Game";
 import { AnimationFactory, MinMax, QuaternionFromYZAxisToRef } from "babylonjs-tiaratumgames-tools";
 import { Easing } from "./Easing";

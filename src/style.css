@@ -37,7 +37,7 @@ body {
 #next-btn {
     position: absolute;
     top: 5px;
-    left: calc(50% + 5px);
+    left: calc(50% + 20px);
     padding: 5px 20px;
     font-size: 30px;
     background-color: #34bbe6;
@@ -50,12 +50,21 @@ body {
     paint-order: stroke fill;
 }
 
+#next-btn-label {
+    position: absolute;
+    font-size: 14px;
+    width: 120px;
+    left: 110%;
+    top: 20%;
+    text-align: center;
+}
+
 #newgame-btn {
     position: absolute;
     top: 40%;
-    left: calc(50% - 100px);
-    width: 200px;
-    padding: 10px 20px;
+    left: calc(50% - 120px);
+    width: 240px;
+    padding: 20px 30px;
     font-size: 40px;
     background-color: #49da9a;
     color: white;
@@ -63,14 +72,14 @@ body {
     border-radius: 10px;
     cursor: pointer;
     font-family: JungleFever;
-    -webkit-text-stroke: 2px black;
+    -webkit-text-stroke: 4px black;
     paint-order: stroke fill;
 }
 
 #score {
     position: absolute;
     top: 5px;
-    right: calc(50% + 10px);
+    right: calc(50% + 20px);
     width: 150px;
     padding: 5px 0px;
     font-size: 30px;
@@ -103,7 +112,7 @@ body {
 #lives {
     position: absolute;
     top: 55px;
-    right: calc(50% + 10px);
+    right: calc(50% + 30px);
     width: fit-content;
     font-size: 18px;
     font-weight: 500;

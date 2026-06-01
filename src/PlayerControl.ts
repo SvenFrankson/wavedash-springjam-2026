@@ -1,5 +1,9 @@
-import { Vector3, Mesh, MeshBuilder, Matrix, Axis, Color3 } from "@babylonjs/core";
-import { CreateBeveledBoxVertexData } from "babylonjs-extra-meshes-kit";
+import { Axis } from "@babylonjs/core/Maths/math.axis";
+import { Color3 } from "@babylonjs/core/Maths/math.color";
+import { Matrix, Vector3 } from "@babylonjs/core/Maths/math.vector";
+import { Mesh } from "@babylonjs/core/Meshes/mesh";
+import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder";
+import { CreateBeveledBoxVertexData } from "babylonjs-tiaratumgames-tools";
 import { QuaternionFromYZAxisToRef } from "babylonjs-tiaratumgames-tools";
 import { Game } from "./Game";
 import { Pet, PetHitBox } from "./Pets";

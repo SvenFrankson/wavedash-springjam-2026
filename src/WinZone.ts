@@ -1,6 +1,9 @@
-import { Color4, Mesh, MeshBuilder, Vector3 } from "@babylonjs/core";
+import { Color4 } from "@babylonjs/core/Maths/math.color";
+import { Vector3 } from "@babylonjs/core/Maths/math.vector";
+import { Mesh } from "@babylonjs/core/Meshes/mesh";
+import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder";
 import { Game } from "./Game";
-import { CreateBeveledBoxVertexData } from "babylonjs-extra-meshes-kit";
+import { CreateBeveledBoxVertexData } from "babylonjs-tiaratumgames-tools";
 import { Pet } from "./Pets";
 
 export class WinZone extends Mesh {

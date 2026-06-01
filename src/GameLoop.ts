@@ -4,7 +4,7 @@ import { Game } from "./Game";
 import { Pet } from "./Pets";
 import { RandomThankYou, ToonSoundType, Wait } from "./ToonSound";
 import { USE_WAVEDASH_SDK, Wavedash } from "./Index";
-import { Color3 } from "@babylonjs/core";
+import { Color3 } from "@babylonjs/core/Maths/math.color";
 
 var tooltips: string[] = [];
 tooltips[0] = "- Hello ! Welcome to Animal Shelter :)";
