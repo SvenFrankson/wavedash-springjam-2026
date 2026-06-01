@@ -13,6 +13,7 @@ import { WinZone } from "./WinZone";
 import { GameLoop } from "./GameLoop";
 import { ToonSoundManager } from "./ToonSound";
 import { CreateBeveledCylinder } from "babylonjs-extra-meshes-kit";
+import { MyCamera } from "./MyCamera";
 registerBuiltInLoaders();
 
 export class Game {
@@ -55,7 +56,7 @@ export class Game {
         this.engine = new Engine(canvas, true, undefined, false)
         this.scene = new Scene(this.engine);
         this.scene.clearColor.set(0, 0, 1, 1);
-        this.camera = new ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2, 22, new Vector3(0, 6, 0), this.scene);
+        this.camera = new MyCamera("camera", -Math.PI / 2, 0.48 * Math.PI, 22, new Vector3(0, 10, 0), this);
         //this.camera.attachControl(canvas, true);
         let light = new HemisphericLight("light", new Vector3(1, 3, -2), this.scene);
         light.direction = (new Vector3(2, 1, -1.5)).normalize();
