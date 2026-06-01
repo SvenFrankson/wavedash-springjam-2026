@@ -10,6 +10,7 @@ export class BaseMaterials {
     public materials: StandardMaterial[] = [];
     public black: StandardMaterial;
     public white: StandardMaterial;
+    public ultraWhite: StandardMaterial;
     public red: StandardMaterial;
     public orange: StandardMaterial;
     public yellow: StandardMaterial;
@@ -32,6 +33,8 @@ export class BaseMaterials {
         this.blue = this._makeMaterial("blue", "#34bbe6");
         this.marine = this._makeMaterial("marine", "#4355db");
         this.pink = this._makeMaterial("pink", "#d23be7");
+        this.ultraWhite = this._makeMaterial("ultraWhite", "#ffffff");
+        this.ultraWhite.emissiveColor.copyFromFloats(1, 1, 1);
 
         this.materials = [
             this.red,

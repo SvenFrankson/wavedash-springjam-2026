@@ -5,6 +5,11 @@ import { Pet } from "./Pets";
 import { RandomThankYou, ToonSoundType, Wait } from "./ToonSound";
 import { USE_WAVEDASH_SDK, Wavedash } from "./Index";
 import { Color3 } from "@babylonjs/core/Maths/math.color";
+import { Mesh } from "@babylonjs/core/Meshes/mesh.pure";
+import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder";
+import { CreatePlaneVertexData } from "@babylonjs/core/Meshes/Builders/planeBuilder.pure";
+import { AnimationFactory, QuaternionFromYZAxis, QuaternionFromZYAxis } from "babylonjs-tiaratumgames-tools";
+import { Easing } from "./Easing";
 
 var tooltips: string[] = [];
 tooltips[0] = "- Hello ! Welcome to Animal Shelter :)";
@@ -47,9 +52,61 @@ var tipMinMaxIndexes = [
     [4, 6]
 ];
 
+export class DrawHint extends Mesh {
+    
+    public startDot: Mesh;
+    public body: Mesh;
+    public endDot: Mesh;
+
+    public startPos: Vector3 = Vector3.Zero();
+    public endPos: Vector3 = Vector3.One();
+
+    constructor(public game: Game) {
+        super("drawHint", game.scene);
+        this.startDot = MeshBuilder.CreateDisc("startDot", { radius: 0.1 }, game.scene);
+        this.endDot = MeshBuilder.CreateDisc("endDot", { radius: 0.15 }, game.scene);
+        this.body = new Mesh("body", game.scene);
+        this.startDot.material = game.baseMaterials.ultraWhite;
+        this.endDot.material = game.baseMaterials.ultraWhite;
+        this.body.material = game.baseMaterials.ultraWhite;
+    }
+
+    public async run(): Promise<void> {
+        this.startDot.position.copyFrom(this.startPos);
+        this.endDot.position.copyFrom(this.startPos);
+        CreatePlaneVertexData({
+            width: 0.2,
+            height: Vector3.Distance(this.startPos, this.endPos)
+        }).applyToMesh(this.body);
+        
+        let endDotAnim = AnimationFactory.CreateVector3(this, this.endDot, "position", this._update);
+        await endDotAnim(this.endPos, 1.5, Easing.easeInOutSine);
+    }
+
+    private _update = () => {
+        if (this.isDisposed()) {
+            return;
+        }
+        CreatePlaneVertexData({
+            width: 0.2,
+            height: Vector3.Distance(this.startDot.position, this.endDot.position)
+        }).applyToMesh(this.body);
+        this.body.position.copyFrom(this.startDot.position).addInPlace(this.endDot.position).scaleInPlace(0.5);
+        this.body.rotationQuaternion = QuaternionFromYZAxis(this.endDot.position.subtract(this.startDot.position).normalize(), new Vector3(0, 0, 1));
+    }
+
+    public dispose(): void {
+        super.dispose();
+        this.startDot.dispose();
+        this.body.dispose();
+        this.endDot.dispose();
+    }
+}
+
 export class GameLoop {
 
     public state: number = 7;
+    private _drawingHint: boolean = false;
 
     constructor(public game: Game) {
         this.game.goBtn.addEventListener("click", () => {
@@ -100,7 +157,23 @@ export class GameLoop {
             this.state = 1;
         }
         else if (this.state === 1) {
-            
+            if (this.game.level === 1) {
+                if (!this._drawingHint) {
+                    this._drawingHint = true;
+                    const [pet] = this.game.pets;
+                    if (pet) {
+                        let hint = new DrawHint(this.game);
+                        hint.startPos.copyFrom(pet.position).addInPlace(new Vector3(Math.random() > 0.5 ? -1 : 1, 1, 0));
+                        hint.endPos.copyFrom(hint.startPos).addInPlace(new Vector3(0, -1.3, 0));
+                        hint.run().then(async () => {
+                            await Wait(1500);
+                            hint.dispose();
+                            await Wait(2000);
+                            this._drawingHint = false;
+                        });
+                    }
+                }
+            }
         }
         else if (this.state === 2) {
             this.game.pets.forEach(pet => pet.enablePhysics());
