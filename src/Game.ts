@@ -1,7 +1,7 @@
 import { Scene } from "@babylonjs/core/scene";
 import { Engine } from "@babylonjs/core/Engines/engine";
 import "@babylonjs/core/Culling/ray";
-import { ArcRotateCamera, Color3, HavokPlugin, HemisphericLight, Mesh, MeshBuilder, PhysicsBody, PhysicsMotionType, PhysicsShapeCylinder, Ray, StandardMaterial, Texture, Vector3 } from "@babylonjs/core";
+import { ArcRotateCamera, AudioEngineV2, Color3, CreateAudioEngineAsync, CreateSoundAsync, HavokPlugin, HemisphericLight, Mesh, MeshBuilder, PhysicsBody, PhysicsMotionType, PhysicsShapeCylinder, Ray, StandardMaterial, StaticSound, Texture, Vector3 } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
 import { registerBuiltInLoaders } from "@babylonjs/loaders/dynamic";
 import { Pet, PetHitBox, PETS } from "./Pets";
@@ -11,7 +11,7 @@ import { Block } from "./Block";
 import { Ball } from "./Ball";
 import { WinZone } from "./WinZone";
 import { GameLoop } from "./GameLoop";
-import { ToonSoundManager, ToonSoundType } from "./ToonSound";
+import { ToonSoundManager } from "./ToonSound";
 import { CreateBeveledCylinder } from "babylonjs-extra-meshes-kit";
 registerBuiltInLoaders();
 
@@ -20,6 +20,7 @@ export class Game {
     public static Instance: Game;
 
     public engine: Engine;
+    public audioEngine: AudioEngineV2 | null = null;
     public scene: Scene;
     public camera: ArcRotateCamera;
     public skybox: Mesh;
@@ -44,13 +45,17 @@ export class Game {
     public winzones: Set<WinZone> = new Set();
     public balls: Set<Ball> = new Set();
 
+    public ambientMusic: HTMLAudioElement | null = null;
+    public createSound: StaticSound | null = null;
+    public starSound: StaticSound | null = null;
+
     constructor(public canvas: HTMLCanvasElement) {
         Game.Instance = this;
 
         this.engine = new Engine(canvas, true, undefined, false)
         this.scene = new Scene(this.engine);
         this.scene.clearColor.set(0, 0, 1, 1);
-        this.camera = new ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2, 20, new Vector3(0, 5, 0), this.scene);
+        this.camera = new ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2, 22, new Vector3(0, 6, 0), this.scene);
         //this.camera.attachControl(canvas, true);
         let light = new HemisphericLight("light", new Vector3(1, 3, -2), this.scene);
         light.direction = (new Vector3(2, 1, -1.5)).normalize();
@@ -88,12 +93,35 @@ export class Game {
 
         this.hideUI();
 
+        this.ambientMusic = document.createElement("audio");
+        this.ambientMusic.src = "./sounds/Origami.mp3";
+        this.ambientMusic.loop = true;
+        this.ambientMusic.volume = 0.2;
+        
+        let attempts = 0;
+        let tryPlayMusic = () => {
+            if (this.ambientMusic?.paused) {
+                this.ambientMusic.play().catch(() => {
+                    attempts++;
+                    if (attempts < 5) {
+                        setTimeout(tryPlayMusic, 1000);
+                    }
+                });
+            }
+        }
+        tryPlayMusic();
+
         window.addEventListener("resize", () => {
             this.onResize();
         });
     }
 
     public async initAndStart(): Promise<void> {
+        (async () => {
+            this.audioEngine = await CreateAudioEngineAsync();
+            this.createSound = await CreateSoundAsync("create-sound", "sounds/activate.wav", { loop: false, autoplay: false, volume: 0.2 });
+            this.starSound = await CreateSoundAsync("star-sound", "sounds/collect_star.wav", { loop: false, autoplay: false, volume: 0.2 });
+        })();
         await this.loadPhysics();
         await this.start();
     }
@@ -235,6 +263,8 @@ export class Game {
         this.scene.onBeforeRenderObservable.add(this.gameLoop.update);
         this.scene.onBeforeRenderObservable.add(this.playerControl.update);
 
+        
+
         this.engine.runRenderLoop(() => {
             this.scene.render()
         })
@@ -262,6 +292,9 @@ export class Game {
             else {
                 child.style.display = "none";
             }
+        }
+        if (this.lives < 0) {
+            this.gameLoop.state = 6;
         }
     }
 

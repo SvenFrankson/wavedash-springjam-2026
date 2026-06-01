@@ -4,6 +4,7 @@ import { Game } from "./Game";
 import { Pet } from "./Pets";
 import { RandomThankYou, ToonSoundType, Wait } from "./ToonSound";
 import { USE_WAVEDASH_SDK, Wavedash } from "./Index";
+import { Color3 } from "@babylonjs/core";
 
 var tooltips: string[] = [];
 tooltips[0] = "- Hello ! Welcome to Animal Shelter :)";
@@ -90,7 +91,9 @@ export class GameLoop {
         }
         this._updating = true;
         
-        this._tipUpdate();
+        if (this.state < 6) {
+            this._tipUpdate();
+        }
 
         if (this.state === 0) {
             this.game.generateRandomPets();
@@ -104,7 +107,9 @@ export class GameLoop {
             this.game.generateRandomBalls();
             this.state = -1;
             setTimeout(() => {
-                this.state = 3;
+                if (this.state === -1) {
+                    this.state = 3;
+                }
             }, 2000);
         }
         else if (this.state === 3) {
@@ -116,6 +121,7 @@ export class GameLoop {
         else if (this.state === 4) {
             for (let pet of this.game.pets) {
                 if (pet && !pet.isDisposed() && !pet.dying) {
+                    pet.flash(new Color3(1, 1, 1), 3);
                     let petGain = 5 + Math.floor(pet.position.y);
                     this.game.toonSoundManager.start({
                         text: RandomThankYou(),
@@ -133,6 +139,9 @@ export class GameLoop {
                         size: 0.8,
                         duration: 2,
                         type: ToonSoundType.Poc
+                    });
+                    this.game.audioEngine?.unlockAsync().then(() => {
+                        this.game.starSound?.play();
                     });
                     this.game.score += petGain;
                     await Wait(350);
@@ -165,7 +174,7 @@ export class GameLoop {
             this.game.showTooltip("- Game Over ! Thanks for playing !");
             this.state = 7;
             this.game.newGameBtn.style.display = "block";
-            this.game.hideUI();
+            //this.game.hideUI();
         }
         this._updating = false;
     }

@@ -1,7 +1,7 @@
 import { Game } from './Game';
 import './style.css';
 
-export var USE_WAVEDASH_SDK = false;
+export var USE_WAVEDASH_SDK = true; // Set to true to enable Wavedash SDK features (achievements, leaderboards, etc). Make sure to include the Wavedash SDK script in index.html if you enable this.
 export var Wavedash: any;
 
 const app = document.querySelector<HTMLDivElement>('#app')
@@ -42,7 +42,7 @@ app.appendChild(tooltip);
 if (USE_WAVEDASH_SDK) {
     Wavedash = await (window as any).Wavedash;
     Wavedash.updateLoadProgressZeroToOne(0.5);
-    await Wavedash.init({ debug: true });
+    await Wavedash.init();
 }
 
 const game = new Game(canvas);

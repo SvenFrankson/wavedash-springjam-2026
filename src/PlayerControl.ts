@@ -1,4 +1,4 @@
-import { Vector3, Mesh, MeshBuilder, Matrix, Axis } from "@babylonjs/core";
+import { Vector3, Mesh, MeshBuilder, Matrix, Axis, Color3 } from "@babylonjs/core";
 import { CreateBeveledBoxVertexData } from "babylonjs-extra-meshes-kit";
 import { QuaternionFromYZAxisToRef } from "babylonjs-tiaratumgames-tools";
 import { Game } from "./Game";
@@ -28,22 +28,23 @@ export class PlayerControl {
     public verticalPanel: Mesh;
     
     constructor(public game: Game) {
-        this.verticalPanel = MeshBuilder.CreatePlane("verticalPanel", { width: 100, height: 20 }, this.scene);
-        this.verticalPanel.position.y = 10;
+        this.verticalPanel = MeshBuilder.CreatePlane("verticalPanel", { width: 100, height: 21 }, this.scene);
+        this.verticalPanel.position.y = 9;
         this.verticalPanel.visibility = 0;
 
-        /*
         MeshBuilder.CreateLines("drawZone", { points: [
             new Vector3(-10, 0, 0),
             new Vector3(10, 0, 0),
-            new Vector3(10, 40, 0),
-            new Vector3(-10, 40, 0),
+            new Vector3(10, 20, 0),
+            new Vector3(-10, 20, 0),
             new Vector3(-10, 0, 0)
         ]}, this.scene);
-        */
     }
     
     public onPointerDown = () => {
+        if (this.game.gameLoop.state != 1) {
+            return;
+        }
         let pickResult = this.scene.pick(this.scene.pointerX, this.scene.pointerY, (mesh) => { return mesh instanceof PetHitBox || mesh instanceof Block; });
         if (!pickResult?.hit) {
             pickResult = this.scene.pick(this.scene.pointerX, this.scene.pointerY, (mesh) => { return mesh == this.verticalPanel; });
@@ -74,6 +75,9 @@ export class PlayerControl {
                 this._pointerDownPos.copyFrom(pickResult.pickedPoint!);
                 this._newBox = new Block("box", this.game);
                 this._newBox.position.copyFrom(this._pointerDownPos);
+                this._newBoxSize.x = Block.Width;
+                this._newBoxSize.y = Block.Width;
+                this._newBoxSize.z = Block.Depth;
                 let vData = CreateBeveledBoxVertexData({ width: Block.Width, height: 0.5, depth: Block.Depth });
                 vData.applyToMesh(this._newBox!);
             }
@@ -81,6 +85,9 @@ export class PlayerControl {
     }
 
     public onPointerMove = () => {
+        if (this.game.gameLoop.state != 1) {
+            return;
+        }
         if (!this._pointerDown) {
             return;
         }
@@ -91,7 +98,7 @@ export class PlayerControl {
                 let dir = currentPos.subtract(this._pointerDownPos);
                 let center = Vector3.Center(this._pointerDownPos, currentPos);
                 let size = currentPos.subtract(this._pointerDownPos).length();
-                size = Math.max(size, 0.5);
+                size = Math.max(size, Block.Width);
                 size = Math.round(size / Block.Width) * Block.Width;
                 size = Math.min(size, 16 * Block.Width);
                 this._newBox!.position.copyFrom(center);
@@ -106,8 +113,15 @@ export class PlayerControl {
     }
 
     public onPointerUp = () => {
+        if (this.game.gameLoop.state != 1) {
+            return;
+        }
         if (this._newBox) {
             this._newBox.init(this._newBoxSize);
+            this._newBox.flash(new Color3(1, 1, 1), 1);
+            this.game.audioEngine?.unlockAsync().then(() => {
+                this.game.createSound?.play();
+            });
         }
         this._pointerDown = false;
         this._newBox = null;
@@ -125,6 +139,9 @@ export class PlayerControl {
     }
 
     public update = () => {
+        if (this.game.gameLoop.state != 1) {
+            return;
+        }
         if (this._pointerDown && (this._selectedPet || this._selectedBlock)) {
             let pickResult = this.scene.pick(this.scene.pointerX, this.scene.pointerY, (mesh) => { return mesh == this.verticalPanel });
             if (pickResult?.hit) {

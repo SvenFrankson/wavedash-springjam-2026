@@ -1,7 +1,8 @@
-import { Mesh, PhysicsBody, PhysicsMotionType, PhysicsShapeBox, Quaternion, Vector3 } from "@babylonjs/core";
+import { Color3, Mesh, PhysicsBody, PhysicsMotionType, PhysicsShapeBox, Quaternion, Vector3 } from "@babylonjs/core";
 import { Game } from "./Game";
 import { BaseMaterials } from "./BaseMaterials";
 import { CreateBeveledBoxVertexData } from "babylonjs-extra-meshes-kit";
+import { Wait } from "./ToonSound";
 
 export class Block extends Mesh {
 
@@ -47,6 +48,15 @@ export class Block extends Mesh {
         if (this.position.y < -10) {
             this.game.scene.onBeforeRenderObservable.removeCallback(this._update);
             this.dispose();
+        }
+    }
+    
+    public async flash(color: Color3, count: number = 4): Promise<void> {
+        for (let i = 0; i < count; i++) {
+            BaseMaterials.MakeOutlineWithChild(this, 0.05, color.r, color.g, color.b);
+            await Wait(150);
+            BaseMaterials.MakeOutlineWithChild(this);
+            await Wait(150);
         }
     }
 
