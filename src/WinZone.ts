@@ -17,7 +17,7 @@ export class WinZone extends Mesh {
         this.visibility = 0.2;
         this.material = this.game.baseMaterials.yellow;
 
-        let c = new Color4(1, 1, 0, 0.8);
+        let c = new Color4(0.8, 1, 0.6, 1);
         let line = MeshBuilder.CreateLines("winZoneLine", {
             points: [
                 new Vector3(-this.halfSize + 0.1, -this.halfSize, 0),

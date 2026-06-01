@@ -32,6 +32,7 @@ export class PlayerControl {
         this.verticalPanel.position.y = 9;
         this.verticalPanel.visibility = 0;
 
+        /*
         MeshBuilder.CreateLines("drawZone", { points: [
             new Vector3(-10, 0, 0),
             new Vector3(10, 0, 0),
@@ -39,6 +40,7 @@ export class PlayerControl {
             new Vector3(-10, 20, 0),
             new Vector3(-10, 0, 0)
         ]}, this.scene);
+        */
     }
     
     public onPointerDown = () => {

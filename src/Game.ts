@@ -12,7 +12,7 @@ import { Ball } from "./Ball";
 import { WinZone } from "./WinZone";
 import { GameLoop } from "./GameLoop";
 import { ToonSoundManager } from "./ToonSound";
-import { CreateBeveledCylinder } from "babylonjs-extra-meshes-kit";
+import { CreateBeveledCylinder, CreateBeveledCylinderVertexData } from "babylonjs-extra-meshes-kit";
 import { MyCamera } from "./MyCamera";
 registerBuiltInLoaders();
 
@@ -139,9 +139,27 @@ export class Game {
         // enable physics in the scene with a gravity
         this.scene.enablePhysics(new Vector3(0, -9.8, 0), hk);
 
-        this.ground = CreateBeveledCylinder("ground", { tessellation: 64, radius: 10, height: 1 }, this.scene);
+        this.ground = new Mesh("ground", this.scene);
         this.ground.position.y = -0.5;
-        this.ground.material = this.baseMaterials.green;
+
+        let vertexData = CreateBeveledCylinderVertexData({ tessellation: 64, radius: 10, height: 1 });
+        if (vertexData.uvs) {
+            for (let i = 0; i < vertexData.positions!.length / 3; i++) {
+                let x = vertexData.positions![i * 3];
+                let z = vertexData.positions![i * 3 + 2];
+                vertexData.uvs[i * 2] = x;
+                vertexData.uvs[i * 2 + 1] = z;
+            }
+        }
+        vertexData.applyToMesh(this.ground);
+        BaseMaterials.MakeOutline(this.ground);
+
+        const m = new StandardMaterial("grass");
+        m.diffuseTexture = new Texture("textures/grass.jpg", this.scene);
+        m.emissiveColor.copyFromFloats(0.5, 0.5, 0.5);
+        m.specularColor.copyFromFloats(0, 0, 0);
+
+        this.ground.material = m;
 
         const body = new PhysicsBody(this.ground, PhysicsMotionType.STATIC, false, this.scene);
         body.setMassProperties({
@@ -234,7 +252,7 @@ export class Game {
 
     public generateRandomBalls(n?: number): void {
         if (!(n! > 0)) {
-            n = 2 * this.level;
+            n = 2 * this.level + 2;
         }
         for (let i = 0; i < n!; i++) {
             setTimeout(() => {
@@ -245,7 +263,7 @@ export class Game {
                 ball.position.x = x;
                 ball.position.y = y;
 
-                ball.init(0.15 + 0.25 * Math.random());
+                ball.init(0.15 + 0.25 * Math.random() * this.level / 8);
 
                 let angle2 = angle + (Math.random() * 2 - 1) * Math.PI / 8;
                 let x2 = Math.cos(angle2);

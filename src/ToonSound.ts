@@ -52,6 +52,8 @@ export interface IToonSoundProp {
 
 export class ToonSound extends Mesh {
 
+    public textW: number = 300;
+    public textH: number = 60;
     public dynamicTexture: DynamicTexture;
     public animateVisibility = AnimationFactory.EmptyNumberCallback;
 
@@ -77,7 +79,7 @@ export class ToonSound extends Mesh {
         this.isVisible = false;
 
         let haikuMaterial = new StandardMaterial("toon-sound-material");
-        this.dynamicTexture = new DynamicTexture("toon-sound-texture", { width: 200, height: 40 });
+        this.dynamicTexture = new DynamicTexture("toon-sound-texture", { width: this.textW, height: this.textH });
         this.dynamicTexture.hasAlpha = true;
         haikuMaterial.diffuseTexture = this.dynamicTexture;
         haikuMaterial.emissiveTexture = this.dynamicTexture;
@@ -111,17 +113,17 @@ export class ToonSound extends Mesh {
     public writeText(text: string): void {
         if (this.soundProp) {
             let context = this.dynamicTexture.getContext();
-            context.clearRect(0, 0, 200, 40);
+            context.clearRect(0, 0, this.textW, this.textH);
 
-            context.font = "24px JungleFever";
+            context.font = (this.textH * 0.6).toFixed(0) + "px JungleFever";
             let l = context.measureText(text).width;
 
             context.lineWidth = 4;
             context.strokeStyle = "black";
-            context.strokeText(text, 100 - l * 0.5, 34);
+            context.strokeText(text, this.textW / 2 - l * 0.5, this.textH * 0.9);
 
             context.fillStyle = this.soundProp.color;
-            context.fillText(text, 100 - l * 0.5, 34);
+            context.fillText(text, this.textW / 2 - l * 0.5, this.textH * 0.9);
 
             this.dynamicTexture.update();
         }

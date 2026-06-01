@@ -39,7 +39,7 @@ body {
     top: 5px;
     left: calc(50% + 5px);
     padding: 5px 20px;
-    font-size: 40px;
+    font-size: 30px;
     background-color: #34bbe6;
     color: white;
     border: 2px solid black;
@@ -71,9 +71,9 @@ body {
     position: absolute;
     top: 5px;
     right: calc(50% + 10px);
-    width: 180px;
+    width: 150px;
     padding: 5px 0px;
-    font-size: 40px;
+    font-size: 30px;
     font-weight: 500;
     background: #f7d038;
     color: white;
@@ -87,11 +87,11 @@ body {
 
 #tooltip {
     position: absolute;
-    bottom: 5px;
+    bottom: 10px;
     left: 5px;
     width: calc(100% - 10px);
     padding: 5px 0px;
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 500;
     color: white;
     font-family: JungleFever;
@@ -102,10 +102,10 @@ body {
 
 #lives {
     position: absolute;
-    top: 65px;
+    top: 55px;
     right: calc(50% + 10px);
     width: fit-content;
-    font-size: 24px;
+    font-size: 18px;
     font-weight: 500;
     color: white;
     font-family: JungleFever;
