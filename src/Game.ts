@@ -125,6 +125,23 @@ export class Game {
         })();
         await this.loadPhysics();
         await this.start();
+
+        let N = PETS.length;
+        for (let n = 0; n < N; n++) {
+            setTimeout(() => {
+                if (this.gameLoop.state === 7) {
+                    let petName = PETS[n];
+                    
+                    let a = n / N * Math.PI * 2;
+                    let x = Math.cos(a) * 10 * (Math.random() * 0.5 + 0.5);
+                    let z = Math.sin(a) * 10 * (Math.random() * 0.5 + 0.5);
+
+                    let pet = new Pet(petName, this);
+                    pet.initialize();
+                    pet.position.set(x, 0.5, z);
+                }
+            }, 20000 * Math.random());
+        }
     }
 
     public async loadPhysics(): Promise<void> {
@@ -177,10 +194,10 @@ export class Game {
     public update = () => {
         this.pets.forEach(pet => {
             if (!pet.dying) {
-                if (Math.abs(pet.position.z) > 1) {
-                    pet.kill();
-                }
-                else if (pet.winzone) {
+                if (pet.winzone) {
+                    if (Math.abs(pet.position.z) > 1) {
+                        pet.kill();
+                    }
                     let dx = pet.position.x - pet.winzone.position.x;
                     let dy = pet.position.y - pet.winzone.position.y;
                     if (Math.abs(dx) > pet.winzone.halfSize || Math.abs(dy) > pet.winzone.halfSize) {
@@ -204,7 +221,7 @@ export class Game {
 
         let maxDH = 0;
         if (this.pets.size > 0) {
-            maxDH = Math.min(this.level * 0.5, 2);
+            maxDH = Math.min(this.level * 0.2, 1);
         }
         let minX = -1;
         let maxX = 1;

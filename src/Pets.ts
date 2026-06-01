@@ -72,6 +72,9 @@ export class Pet extends Mesh {
             "meshes/" + this.petName + ".obj"
         );
         petMeshParts.meshes.forEach(mesh => {
+            if (this.isDisposed()) {
+                mesh.dispose();
+            }
             mesh.isVisible = false;
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
@@ -89,10 +92,16 @@ export class Pet extends Mesh {
                 mesh.material = this.petMaterial;
             }
         });
-        
+
+        if (this.isDisposed()) {
+            return;
+        }
         let scaleAnim = AnimationFactory.CreateVector3(this, this, "scaling");
         await scaleAnim(new Vector3(1, 1, 1), 1.5, Easing.easeOutElastic);
 
+        if (this.isDisposed()) {
+            return;
+        }
         this.game.toonSoundManager.start({
             text: RandomHello(),
             pos: this.position.add(new Vector3(Pet.PetSize * 0.5, Pet.PetSize * 0.5, 0)),
