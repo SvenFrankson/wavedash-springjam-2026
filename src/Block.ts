@@ -17,6 +17,7 @@ export class Block extends Mesh {
 
     constructor(public petName: string, public game: Game) {
         super(petName);
+        this.game.blocks.add(this);
         this.rotationQuaternion = Quaternion.Identity();
         this.material = this.game.baseMaterials.materials[Block.MaterialIndex % this.game.baseMaterials.materials.length];
         BaseMaterials.MakeOutline(this);
@@ -47,5 +48,10 @@ export class Block extends Mesh {
             this.game.scene.onBeforeRenderObservable.removeCallback(this._update);
             this.dispose();
         }
+    }
+
+    public dispose(): void {
+        this.game.blocks.delete(this);
+        super.dispose();
     }
 }

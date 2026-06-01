@@ -1,7 +1,7 @@
 import { Scene } from "@babylonjs/core/scene";
 import { Engine } from "@babylonjs/core/Engines/engine";
 import "@babylonjs/core/Culling/ray";
-import { ArcRotateCamera, Color3, CubeTexture, HavokPlugin, HemisphericLight, Mesh, MeshBuilder, PhysicsBody, PhysicsMotionType, PhysicsShapeCylinder, Ray, StandardMaterial, Texture, Vector3 } from "@babylonjs/core";
+import { ArcRotateCamera, Color3, HavokPlugin, HemisphericLight, Mesh, MeshBuilder, PhysicsBody, PhysicsMotionType, PhysicsShapeCylinder, Ray, StandardMaterial, Texture, Vector3 } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
 import { registerBuiltInLoaders } from "@babylonjs/loaders/dynamic";
 import { Pet, PetHitBox, PETS } from "./Pets";
@@ -29,12 +29,17 @@ export class Game {
     public baseMaterials: BaseMaterials;
     public toonSoundManager: ToonSoundManager;
 
+    public newGameBtn: HTMLButtonElement;
     public scoreElement: HTMLDivElement;
     public tooltipElement: HTMLDivElement;
+    public goBtn: HTMLButtonElement;
+    public livesElement: HTMLDivElement;
 
     public level: number = 1;
     private _score: number = 0;
+    private _lives: number = 0;
     public gameLoop: GameLoop;
+    public blocks: Set<Block> = new Set();
     public pets: Set<Pet> = new Set();
     public winzones: Set<WinZone> = new Set();
     public balls: Set<Ball> = new Set();
@@ -66,12 +71,23 @@ export class Game {
         this.baseMaterials = new BaseMaterials(this);
         this.toonSoundManager = new ToonSoundManager(this);
 
+        this.newGameBtn = document.getElementById("newgame-btn") as HTMLButtonElement;
+        this.newGameBtn.addEventListener("click", () => {
+            this.reset();
+            this.newGameBtn.style.display = "none";
+        });
+        this.scoreElement = document.getElementById("score") as HTMLDivElement;
+        this.tooltipElement = document.getElementById("tooltip") as HTMLDivElement;
+        this.livesElement = document.getElementById("lives") as HTMLDivElement;
+        this.goBtn = document.getElementById("next-btn") as HTMLButtonElement;
+        this.lives = 5;
+
         this.playerControl = new PlayerControl(this);
 
         this.gameLoop = new GameLoop(this);
 
-        this.scoreElement = document.getElementById("score") as HTMLDivElement;
-        this.tooltipElement = document.getElementById("tooltip") as HTMLDivElement;
+        this.hideUI();
+
         window.addEventListener("resize", () => {
             this.onResize();
         });
@@ -113,17 +129,21 @@ export class Game {
 
     public update = () => {
         this.pets.forEach(pet => {
-            if (Math.abs(pet.position.z) > 1) {
-                pet.dispose();
-            }
-            else if (pet.winzone) {
-                let dx = pet.position.x - pet.winzone.position.x;
-                let dy = pet.position.y - pet.winzone.position.y;
-                if (Math.abs(dx) > pet.winzone.halfSize || Math.abs(dy) > pet.winzone.halfSize) {
-                    pet.dispose();
+            if (!pet.dying) {
+                if (Math.abs(pet.position.z) > 1) {
+                    pet.kill();
+                }
+                else if (pet.winzone) {
+                    let dx = pet.position.x - pet.winzone.position.x;
+                    let dy = pet.position.y - pet.winzone.position.y;
+                    if (Math.abs(dx) > pet.winzone.halfSize || Math.abs(dy) > pet.winzone.halfSize) {
+                        pet.kill();
+                    }
                 }
             }
         });
+
+        this.skybox.rotation.y += this.engine.getDeltaTime() / 100000;
 
         if (this.toonSoundManager) {
             this.toonSoundManager.update(this.scene.getEngine().getDeltaTime() / 1000);
@@ -165,15 +185,6 @@ export class Game {
             pet.position.maximizeInPlace(new Vector3(-9, 0, 0));
 
             new WinZone(pet, this);
-
-            this.toonSoundManager.start({
-                text: "HELLO !",
-                pos: pet.position.add(new Vector3(Pet.PetSize * 0.5, Pet.PetSize * 0.5, 0)),
-                color: "#FFFFFF",
-                size: 0.5,
-                duration: 1,
-                type: ToonSoundType.Poc
-            });
         }
     }
 
@@ -237,9 +248,59 @@ export class Game {
         this.scoreElement.textContent = value.toString().padStart(5, '0');
     }
 
+    public get lives(): number {
+        return this._lives;
+    }
+    public set lives(value: number) {
+        this._lives = value;
+        let children = this.livesElement.children;
+        for (let i = 0; i < children.length; i++) {
+            let child = children[i] as HTMLElement;
+            if (i < value) {
+                child.style.display = "inline";
+            }
+            else {
+                child.style.display = "none";
+            }
+        }
+    }
+
     public showTooltip(text: string): void {
         this.tooltipElement.textContent = text;
         this.tooltipElement.style.opacity = "1";
+    }
+
+    public reset(): void {
+        for (let pet of this.pets) {
+            pet.dispose();
+        }
+        for (let ball of this.balls) {
+            ball.dispose();
+        }
+        for (let block of this.blocks) {
+            block.dispose();
+        }
+        this.score = 0;
+        this.lives = 5;
+        this.level = 1;
+        Block.Width = 0.4;
+        Block.MaterialIndex = 0;
+        this.showUI();
+        this.gameLoop.reset();
+    }
+
+    public showUI(): void {
+        this.scoreElement.style.display = "block";
+        this.livesElement.style.display = "block";
+        this.goBtn.style.display = "block";
+        this.tooltipElement.style.display = "block";
+    }
+
+    public hideUI(): void {
+        this.scoreElement.style.display = "none";
+        this.livesElement.style.display = "none";
+        this.goBtn.style.display = "none";
+        this.tooltipElement.style.display = "none";
     }
 
     public onResize() {

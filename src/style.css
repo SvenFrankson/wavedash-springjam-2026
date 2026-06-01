@@ -50,6 +50,23 @@ body {
     paint-order: stroke fill;
 }
 
+#newgame-btn {
+    position: absolute;
+    top: 40%;
+    left: calc(50% - 100px);
+    width: 200px;
+    padding: 10px 20px;
+    font-size: 40px;
+    background-color: #49da9a;
+    color: white;
+    border: 2px solid black;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: JungleFever;
+    -webkit-text-stroke: 2px black;
+    paint-order: stroke fill;
+}
+
 #score {
     position: absolute;
     top: 5px;
@@ -74,6 +91,20 @@ body {
     left: 5px;
     width: calc(100% - 10px);
     padding: 5px 0px;
+    font-size: 24px;
+    font-weight: 500;
+    color: white;
+    font-family: JungleFever;
+    text-align: center;
+    -webkit-text-stroke: 4px black;
+    paint-order: stroke fill;
+}
+
+#lives {
+    position: absolute;
+    top: 65px;
+    right: calc(50% + 10px);
+    width: fit-content;
     font-size: 24px;
     font-weight: 500;
     color: white;

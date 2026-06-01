@@ -3,6 +3,7 @@ import { Block } from "./Block";
 import { Game } from "./Game";
 import { Pet } from "./Pets";
 import { RandomThankYou, ToonSoundType, Wait } from "./ToonSound";
+import { USE_WAVEDASH_SDK, Wavedash } from "./Index";
 
 var tooltips: string[] = [];
 tooltips[0] = "- Hello ! Welcome to Animal Shelter :)";
@@ -47,21 +48,27 @@ var tipMinMaxIndexes = [
 
 export class GameLoop {
 
-    public state: number = 0;
+    public state: number = 7;
 
     constructor(public game: Game) {
-        document.getElementById("next-btn")?.addEventListener("click", () => {
+        this.game.goBtn.addEventListener("click", () => {
             if (this.state === 1) {
                 this.state = 2;
             }
         });
     }
 
+    public reset(): void {
+        this.state = 0;
+        this._tipIndex = -1;
+        this._tipTimer = Infinity;
+    }
+
     private _tipIndex = -1;
     private _tipTimer: number = Infinity;
     private _tipUpdate(): void {
         this._tipTimer += this.game.engine.getDeltaTime() / 1000;
-        if (this._tipTimer > 8) {
+        if (this._tipTimer > 6) {
             this._tipTimer = 0;
             let randomTipChance = Math.min((this.game.level - 2) / 10, 0.8);
             if (Math.random() < randomTipChance) {
@@ -108,7 +115,7 @@ export class GameLoop {
         }
         else if (this.state === 4) {
             for (let pet of this.game.pets) {
-                if (pet && !pet.isDisposed()) {
+                if (pet && !pet.isDisposed() && !pet.dying) {
                     let petGain = 5 + Math.floor(pet.position.y);
                     this.game.toonSoundManager.start({
                         text: RandomThankYou(),
@@ -131,6 +138,18 @@ export class GameLoop {
                     await Wait(350);
                 }
             }
+            if (USE_WAVEDASH_SDK) {
+                for (let n = 1; n <= this.game.pets.size; n++) {
+                    let achievement = "SAVE_" + n.toFixed(0) + "_ANIMALS";
+                    Wavedash.setAchievement(achievement, true);
+                }
+                const leaderboard = await Wavedash.getOrCreateLeaderboard("HIGHSCORE", Wavedash.LeaderboardSortOrder.DESC, Wavedash.LeaderboardDisplayType.NUMERIC);
+                const leaderboardId = leaderboard.success ? leaderboard.data.id : null;
+
+                if (leaderboardId) {
+                    await Wavedash.uploadLeaderboardScore(leaderboardId, this.game.score, true);
+                }
+            }
             await Wait(300);
             this.state = 5;
         }
@@ -141,6 +160,12 @@ export class GameLoop {
             this.state = 0;
             this._tipIndex = -1;
             this._tipTimer = Infinity;
+        }
+        else if (this.state === 6) {
+            this.game.showTooltip("- Game Over ! Thanks for playing !");
+            this.state = 7;
+            this.game.newGameBtn.style.display = "block";
+            this.game.hideUI();
         }
         this._updating = false;
     }

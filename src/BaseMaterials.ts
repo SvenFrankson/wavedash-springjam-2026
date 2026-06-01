@@ -43,10 +43,22 @@ export class BaseMaterials {
         ];
     }
 
-    public static MakeOutline(m: Mesh): void {
+    public static MakeOutline(m: Mesh, w: number = 0.02, r: number = 0, g: number = 0, b: number = 0): void {
         m.renderOutline = true;
-        m.outlineWidth = 0.01;
-        m.outlineColor.copyFromFloats(0, 0, 0);
+        m.outlineWidth = w;
+        m.outlineColor.copyFromFloats(r, g, b);
+        
+    }
+
+    public static MakeOutlineWithChild(m: Mesh, w: number = 0.02, r: number = 0, g: number = 0, b: number = 0): void {
+        m.renderOutline = true;
+        m.outlineWidth = w;
+        m.outlineColor.copyFromFloats(r, g, b);
+        m.getChildMeshes().forEach(child => {
+            if (child instanceof Mesh) {
+                BaseMaterials.MakeOutlineWithChild(child, w, r, g, b);
+            }
+        });
     }
 
     private _makeMaterial(name: string, hexColor: string): StandardMaterial {

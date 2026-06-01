@@ -1,8 +1,10 @@
 import { Color3, CreateBoxVertexData, Mesh, PhysicsBody, PhysicsMotionType, PhysicsShapeBox, Quaternion, SceneLoader, StandardMaterial, Texture, Vector3, VertexData } from "@babylonjs/core";
-import { ScaleVertexDataInPlace } from "babylonjs-tiaratumgames-tools";
+import { AnimationFactory, ScaleVertexDataInPlace } from "babylonjs-tiaratumgames-tools";
 import { Game } from "./Game";
 import { BaseMaterials } from "./BaseMaterials";
 import { WinZone } from "./WinZone";
+import { RandomHello, ToonSoundType, Wait } from "./ToonSound";
+import { Easing } from "./Easing";
 
 export const PETS = [
     "animal-beaver",
@@ -63,6 +65,8 @@ export class Pet extends Mesh {
 
     public async initialize(): Promise<void> {
 
+        this.scaling.copyFromFloats(0, 0, 0);
+
         let petMeshParts = await SceneLoader.ImportMeshAsync(
             "",
             "meshes/" + this.petName + ".obj"
@@ -84,6 +88,18 @@ export class Pet extends Mesh {
                 vData.applyToMesh(mesh);
                 mesh.material = this.petMaterial;
             }
+        });
+        
+        let scaleAnim = AnimationFactory.CreateVector3(this, this, "scaling");
+        await scaleAnim(new Vector3(1, 1, 1), 1.5, Easing.easeOutElastic);
+
+        this.game.toonSoundManager.start({
+            text: RandomHello(),
+            pos: this.position.add(new Vector3(Pet.PetSize * 0.5, Pet.PetSize * 0.5, 0)),
+            color: "#FFFFFF",
+            size: 0.5,
+            duration: 1,
+            type: ToonSoundType.Poc
         });
     }
 
@@ -107,6 +123,38 @@ export class Pet extends Mesh {
 
     public async disablePhysics(): Promise<void> {
         this.physicsBody?.dispose();
+    }
+
+    public dying = false;
+    public async kill(): Promise<void> {
+        this.dying = true;
+        this.game.toonSoundManager.start({
+            text: "BYE :'(",
+            pos: this.position.add(new Vector3(Pet.PetSize * 0.5, Pet.PetSize * 0.5, 0)),
+            color: "#d13636",
+            size: 0.5,
+            duration: 2,
+            type: ToonSoundType.Poc
+        });
+
+
+        await this.flash(new Color3(1, 0, 0), 3);
+
+        let scaleAnim = AnimationFactory.CreateVector3(this, this, "scaling");
+        await scaleAnim(new Vector3(0, 0, 0), 0.5, Easing.easeInCubic);
+
+        this.game.lives -= 1;
+
+        this.dispose();
+    }
+
+    public async flash(color: Color3, count: number = 4): Promise<void> {
+        for (let i = 0; i < count; i++) {
+            BaseMaterials.MakeOutlineWithChild(this, 0.05, color.r, color.g, color.b);
+            await Wait(150);
+            BaseMaterials.MakeOutlineWithChild(this);
+            await Wait(150);
+        }
     }
 
     public dispose(): void {

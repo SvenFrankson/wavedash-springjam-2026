@@ -1,0 +1,64 @@
+{
+    "achievements": [
+        {
+            "identifier": "SAVE_1_ANIMALS",
+            "display_name": "Save One Animal",
+            "description": "You kept 1 animal in your shelter !"
+        },
+        {
+            "identifier": "SAVE_2_ANIMALS",
+            "display_name": "Save Two Animals",
+            "description": "You kept 2 animals in your shelter !"
+        },
+        {
+            "identifier": "SAVE_3_ANIMALS",
+            "display_name": "Save Three Animals",
+            "description": "You kept 3 animals in your shelter !"
+        },
+        {
+            "identifier": "SAVE_4_ANIMALS",
+            "display_name": "Save Four Animals",
+            "description": "You kept 4 animals in your shelter !"
+        },
+        {
+            "identifier": "SAVE_5_ANIMALS",
+            "display_name": "Save Five Animals",
+            "description": "You kept 5 animals in your shelter !"
+        },
+        {
+            "identifier": "SAVE_6_ANIMALS",
+            "display_name": "Save Six Animals",
+            "description": "You kept 6 animals in your shelter !"
+        },
+        {
+            "identifier": "SAVE_7_ANIMALS",
+            "display_name": "Save Seven Animals",
+            "description": "You kept 7 animals in your shelter !"
+        },
+        {
+            "identifier": "SAVE_8_ANIMALS",
+            "display_name": "Save Eight Animals",
+            "description": "You kept 8 animals in your shelter !"
+        },
+        {
+            "identifier": "SAVE_9_ANIMALS",
+            "display_name": "Save Nine Animals",
+            "description": "You kept 9 animals in your shelter !"
+        },
+        {
+            "identifier": "SAVE_10_ANIMALS",
+            "display_name": "Save Ten Animals",
+            "description": "You kept 10 animals in your shelter !"
+        },
+        {
+            "identifier": "SAVE_11_ANIMALS",
+            "display_name": "Save Eleven Animals",
+            "description": "You kept 11 animals in your shelter !"
+        },
+        {
+            "identifier": "SAVE_12_ANIMALS",
+            "display_name": "Save Twelve Animals",
+            "description": "You kept 12 animals in your shelter !"
+        }
+    ]
+}

@@ -7,6 +7,20 @@ export async function Wait(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+var Hellos = [
+    "HELLO !",
+    "BONJOUR !",
+    "HALLO !",
+    "HOLA !",
+    "CIAO !",
+    "KONNICHIWA !",
+    "NI HAO !",
+    "OLA !"
+];
+export function RandomHello(): string {
+    return Hellos[Math.floor(Math.random() * Hellos.length)];
+}
+
 var ThankYous = [
     "THANKS !",
     "MERCI !",
@@ -15,7 +29,6 @@ var ThankYous = [
     "GRAZIE !",
     "ARIGATO !",
     "XIE XIE !",
-    "SPASIBO !",
     "OBRIGADO !"
 ];
 export function RandomThankYou(): string {
