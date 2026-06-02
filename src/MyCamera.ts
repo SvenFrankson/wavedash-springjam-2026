@@ -4,8 +4,8 @@ import { Game } from "./Game";
 
 export class MyCamera extends ArcRotateCamera {
 
-    public zoneMin: Vector3 = new Vector3(-10, -1, 0);
-    public zoneMax: Vector3 = new Vector3(10, 1, 0);
+    public zoneMin: Vector3 = new Vector3(-1, -1, 0);
+    public zoneMax: Vector3 = new Vector3(1, 1, 0);
 
     private _targetRadius: number = 20;
     private _targetTarget: Vector3 = Vector3.Zero();
@@ -26,9 +26,18 @@ export class MyCamera extends ArcRotateCamera {
     }
 
     public updateZone(): void {
+        this.zoneMin.x += 0.1;
+        this.zoneMin.x = Math.min(this.zoneMin.x, -1);
+
+        this.zoneMax.x -= 0.1;
+        this.zoneMax.x = Math.max(this.zoneMax.x, 1);
+
         this.zoneMax.y -= 0.1;
         this.zoneMax.y = Math.max(this.zoneMax.y, 1);
+
         for (let pet of this.game.pets) {
+            this.zoneMin.x = Math.min(this.zoneMin.x, pet.position.x + 4);
+            this.zoneMax.x = Math.max(this.zoneMax.x, pet.position.x + 4);
             this.zoneMax.y = Math.max(this.zoneMax.y, pet.position.y + 4);
         }
     }

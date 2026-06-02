@@ -21,6 +21,8 @@ export class PlayerControl {
         return this.game.camera;
     }
 
+    public minDrawY: number = - 1;
+    public maxDrawY: number = 40;
     private _pointerDown = false;
     private _pointerDownPos: Vector3 = Vector3.Zero();
     private _selectedPet: Pet | null = null;
@@ -32,8 +34,8 @@ export class PlayerControl {
     public verticalPanel: Mesh;
     
     constructor(public game: Game) {
-        this.verticalPanel = MeshBuilder.CreatePlane("verticalPanel", { width: 100, height: 21 }, this.scene);
-        this.verticalPanel.position.y = 9;
+        this.verticalPanel = MeshBuilder.CreatePlane("verticalPanel", { width: 100, height: this.maxDrawY - this.minDrawY }, this.scene);
+        this.verticalPanel.position.y = (this.maxDrawY + this.minDrawY) / 2;
         this.verticalPanel.visibility = 0;
 
         /*

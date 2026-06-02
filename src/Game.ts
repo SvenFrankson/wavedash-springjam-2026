@@ -51,6 +51,7 @@ export class Game {
     public tooltipElement: HTMLDivElement;
     public goBtn: HTMLButtonElement;
     public livesElement: HTMLDivElement;
+    public gameStateElement: HTMLDivElement;
 
     public level: number = 1;
     private _score: number = 0;
@@ -101,6 +102,7 @@ export class Game {
         this.tooltipElement = document.getElementById("tooltip") as HTMLDivElement;
         this.livesElement = document.getElementById("lives") as HTMLDivElement;
         this.goBtn = document.getElementById("next-btn") as HTMLButtonElement;
+        this.gameStateElement = document.getElementById("game-state") as HTMLDivElement;
         this.lives = 5;
 
         this.playerControl = new PlayerControl(this);
@@ -256,7 +258,7 @@ export class Game {
             else {
                 pet.position.set(x, Pet.PetSize / 2 + 0.01, 0);
             }
-            pet.position.minimizeInPlace(new Vector3(9, 19, 0));
+            pet.position.minimizeInPlace(new Vector3(9, this.playerControl.maxDrawY - 1, 0));
             pet.position.maximizeInPlace(new Vector3(-9, 0, 0));
 
             new WinZone(pet, this);
@@ -370,10 +372,10 @@ export class Game {
     }
 
     public showUI(): void {
-        this.scoreElement.style.display = "block";
-        this.livesElement.style.display = "block";
-        this.goBtn.style.display = "block";
-        this.tooltipElement.style.display = "block";
+        this.scoreElement.style.display = "";
+        this.livesElement.style.display = "";
+        this.goBtn.style.display = "";
+        this.tooltipElement.style.display = "";
     }
 
     public hideUI(): void {

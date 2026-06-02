@@ -17,16 +17,6 @@ const canvas = document.createElement('canvas')
 canvas.id = 'render-canvas'
 app.appendChild(canvas);
 
-const nextBtn = document.createElement('button');
-nextBtn.id = 'next-btn';
-nextBtn.textContent = 'GO !';
-app.appendChild(nextBtn);
-
-const nextBtnLabel = document.createElement('div');
-nextBtnLabel.id = 'next-btn-label';
-nextBtnLabel.textContent = '- click to start the rain ! -';
-nextBtn.appendChild(nextBtnLabel);
-
 const newGame = document.createElement('button');
 newGame.id = 'newgame-btn';
 newGame.textContent = 'NEW GAME';
@@ -41,6 +31,30 @@ const lives = document.createElement('div');
 lives.id = 'lives';
 lives.innerHTML = `<span>&#x2665;&#xfe0f;</span><span>&#x2665;&#xfe0f;</span><span>&#x2665;&#xfe0f;</span><span>&#x2665;&#xfe0f;</span><span>&#x2665;&#xfe0f;</span><span>&#x2665;&#xfe0f;</span>`;
 app.appendChild(lives);
+
+const gameStateContainer = document.createElement('div');
+gameStateContainer.id = 'game-state-container';
+app.appendChild(gameStateContainer);
+
+const gameState = document.createElement('div');
+gameState.id = 'game-state';
+gameState.textContent = '';
+gameStateContainer.appendChild(gameState);
+
+const gameStateTimer = document.createElement('div');
+gameStateTimer.id = 'game-state-timer';
+gameStateTimer.textContent = '';
+gameStateContainer.appendChild(gameStateTimer);
+
+const nextBtn = document.createElement('button');
+nextBtn.id = 'next-btn';
+nextBtn.textContent = 'NEXT';
+gameStateContainer.appendChild(nextBtn);
+
+const nextBtnLabel = document.createElement('div');
+nextBtnLabel.id = 'next-btn-label';
+nextBtnLabel.textContent = '- click to start the rain ! -';
+nextBtn.appendChild(nextBtnLabel);
 
 const tooltip = document.createElement('div');
 tooltip.id = 'tooltip';

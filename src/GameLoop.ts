@@ -14,11 +14,11 @@ import { Easing } from "./Easing";
 var tooltips: string[] = [];
 tooltips[0] = "- Hello ! Welcome to Animal Shelter :)";
 tooltips[1] = "- Please, help : Build a shelter before the rain !";
-tooltips[2] = "- Press GO when you think the shelter is ready :)";
+tooltips[2] = "Tips : Press NEXT when you think the shelter is ready :)";
 tooltips[3] = "- The shelter must help me stay in my zone !";
-tooltips[4] = "- You can drag and drop existing blocks to make a shelter !";
+tooltips[4] = "Tips : You can drag and drop existing blocks to make a shelter !";
 tooltips[5] = "- The higher we are sheltered, the more points we will give you !";
-tooltips[6] = "- The island seems to cluttered ? Toss some blocks away !";
+tooltips[6] = "Tips : The island seems to cluttered ? Toss some blocks away !";
 
 var randomTips = [
     "- You saved our lives we are eternally grateful !",
@@ -50,6 +50,18 @@ var tipMinMaxIndexes = [
     [4, 6],
     [4, 6],
     [4, 6]
+];
+
+var stateTexts = [
+    "",
+    "Build a Shelter !",
+    "Wait for the Storm to Pass !",
+    "Wait for the Storm to Pass !",
+    "Calculating Score...",
+    "",
+    "",
+    "",
+    "Game Over"
 ];
 
 export class DrawHint extends Mesh {
@@ -105,7 +117,14 @@ export class DrawHint extends Mesh {
 
 export class GameLoop {
 
-    public state: number = 7;
+    private _state: number = 7;
+    public get state(): number {
+        return this._state;
+    }
+    public set state(value: number) {
+        this._state = value;
+        this.game.gameStateElement.textContent = stateTexts[value] || value.toString();
+    }
     private _drawingHint: boolean = false;
 
     constructor(public game: Game) {
@@ -141,8 +160,22 @@ export class GameLoop {
         }
     }
 
+    private _stateTimer: number = 0;
     private _updating = false;
     public update = async () => {
+        let timer = document.querySelector("#game-state-timer") as HTMLDivElement;
+        if (timer) {
+            if (this.state === 1) {
+                timer.textContent = this._stateTimer.toFixed(0);
+                timer.style.display = "";
+                this.game.goBtn.style.display = "";
+            }
+            else {
+                timer.style.display = "none";
+                this.game.goBtn.style.display = "none";
+            }
+        }
+        
         if (this._updating || this.state === -1) {
             return;
         }
@@ -155,8 +188,13 @@ export class GameLoop {
         if (this.state === 0) {
             this.game.generateRandomPets();
             this.state = 1;
+            this._stateTimer = 45;
         }
         else if (this.state === 1) {
+            this._stateTimer -= this.game.engine.getDeltaTime() / 1000;
+            if (this._stateTimer <= 0) {
+                this.state = 2;
+            }
             if (this.game.level === 1) {
                 if (!this._drawingHint) {
                     this._drawingHint = true;
@@ -178,12 +216,10 @@ export class GameLoop {
         else if (this.state === 2) {
             this.game.pets.forEach(pet => pet.enablePhysics());
             this.game.generateRandomBalls();
-            this.state = -1;
-            setTimeout(() => {
-                if (this.state === -1) {
-                    this.state = 3;
-                }
-            }, 2000);
+            await Wait(2000);
+            if (this.state === 2) {
+                this.state = 3;
+            }
         }
         else if (this.state === 3) {
             if (this.game.balls.size === 0) {
