@@ -188,7 +188,7 @@ export class GameLoop {
         if (this.state === 0) {
             this.game.generateRandomPets();
             this.state = 1;
-            this._stateTimer = 45;
+            this._stateTimer = 15;
         }
         else if (this.state === 1) {
             this._stateTimer -= this.game.engine.getDeltaTime() / 1000;

@@ -79,7 +79,7 @@ body {
 #score {
     position: absolute;
     top: 5px;
-    left: calc(50% - 75px);
+    right: calc(50% + 10px);
     width: 150px;
     padding: 5px 0px;
     font-size: 30px;
@@ -113,7 +113,7 @@ body {
 #lives {
     position: absolute;
     top: 18px;
-    left: calc(50% + 90px);
+    left: calc(50% + 10px);
     font-size: 18px;
     font-weight: 100;
     color: white;
@@ -136,7 +136,7 @@ body {
 
 #game-state {
     display: inline-block;
-    width: 300px;
+    width: fit-content;
     height: 60px;
     padding: 5px 0px;
     font-size: 18px;

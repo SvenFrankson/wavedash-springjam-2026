@@ -121,9 +121,6 @@ export class PlayerControl {
     }
 
     public onPointerUp = () => {
-        if (this.game.gameLoop.state != 1) {
-            return;
-        }
         if (this._newBox) {
             this._newBox.init(this._newBoxSize);
             this._newBox.flash(new Color3(1, 1, 1), 1);
@@ -144,10 +141,16 @@ export class PlayerControl {
             this._selectedBlock.physicsBody?.setAngularDamping(0);
         }
         this._selectedBlock = null;
+        if (this.game.gameLoop.state != 1) {
+            return;
+        }
     }
 
     public update = () => {
         if (this.game.gameLoop.state != 1) {
+            if (this._newBox || this._selectedBlock || this._selectedPet) {
+                this.onPointerUp();
+            }
             return;
         }
         if (this._pointerDown && (this._selectedPet || this._selectedBlock)) {

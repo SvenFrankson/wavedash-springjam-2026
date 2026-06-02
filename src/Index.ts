@@ -1,7 +1,7 @@
 import { Game } from './Game';
 import './style.css';
 
-export var USE_WAVEDASH_SDK = true;
+export var USE_WAVEDASH_SDK = false;
 if (window.location.href.indexOf("localhost") != -1) {
     USE_WAVEDASH_SDK = false;
 }
