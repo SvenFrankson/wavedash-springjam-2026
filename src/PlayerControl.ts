@@ -8,6 +8,7 @@ import { QuaternionFromYZAxisToRef } from "babylonjs-tiaratumgames-tools";
 import { Game } from "./Game";
 import { Pet, PetHitBox } from "./Pets";
 import { Block } from "./Block";
+import { GameState } from "./GameLoop";
 
 export class PlayerControl {
 
@@ -50,7 +51,7 @@ export class PlayerControl {
     }
     
     public onPointerDown = () => {
-        if (this.game.gameLoop.state != 1) {
+        if (this.game.gameLoop.state != GameState.Building) {
             return;
         }
         let pickResult = this.scene.pick(this.scene.pointerX, this.scene.pointerY, (mesh) => { return mesh instanceof PetHitBox || mesh instanceof Block; });
@@ -93,7 +94,7 @@ export class PlayerControl {
     }
 
     public onPointerMove = () => {
-        if (this.game.gameLoop.state != 1) {
+        if (this.game.gameLoop.state != GameState.Building) {
             return;
         }
         if (!this._pointerDown) {
@@ -141,13 +142,13 @@ export class PlayerControl {
             this._selectedBlock.physicsBody?.setAngularDamping(0);
         }
         this._selectedBlock = null;
-        if (this.game.gameLoop.state != 1) {
+        if (this.game.gameLoop.state != GameState.Building) {
             return;
         }
     }
 
     public update = () => {
-        if (this.game.gameLoop.state != 1) {
+        if (this.game.gameLoop.state != GameState.Building) {
             if (this._newBox || this._selectedBlock || this._selectedPet) {
                 this.onPointerUp();
             }

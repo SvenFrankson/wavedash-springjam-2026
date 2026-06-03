@@ -11,6 +11,20 @@ import { CreatePlaneVertexData } from "@babylonjs/core/Meshes/Builders/planeBuil
 import { AnimationFactory, QuaternionFromYZAxis, QuaternionFromZYAxis } from "babylonjs-tiaratumgames-tools";
 import { Easing } from "./Easing";
 
+export enum GameState {
+    None = -1,
+    Starting,
+    Building,
+    StormStart,
+    Storming,
+    StormEnd,
+    Scoring,
+    LevelUp,
+    GameOver,
+    Ready,
+    Eight
+}
+
 var tooltips: string[] = [];
 tooltips[0] = "- Hello ! Welcome to Animal Shelter :)";
 tooltips[1] = "- Please, help : Build a shelter before the rain !";
@@ -54,15 +68,28 @@ var tipMinMaxIndexes = [
 
 var stateTexts = [
     "",
-    "Build a Shelter !",
+    "",
     "Wait for the Storm to Pass !",
     "Wait for the Storm to Pass !",
     "Calculating Score...",
     "",
     "",
+    "Game Over",
+    "Game Over",
     "",
-    "Game Over"
+    ""
 ];
+
+stateTexts[GameState.Starting] = "";
+stateTexts[GameState.Building] = "Build a Shelter !";
+stateTexts[GameState.StormStart] = "Wait for the Storm to Pass !";
+stateTexts[GameState.Storming] = "Wait for the Storm to Pass !";
+stateTexts[GameState.StormEnd] = "Wait for the Storm to Pass !";
+stateTexts[GameState.Scoring] = "Calculating Score...";
+stateTexts[GameState.LevelUp] = "";
+stateTexts[GameState.GameOver] = "Game Over";
+stateTexts[GameState.Ready] = "";
+stateTexts[GameState.Eight] = "";
 
 export class DrawHint extends Mesh {
     
@@ -117,11 +144,11 @@ export class DrawHint extends Mesh {
 
 export class GameLoop {
 
-    private _state: number = 7;
-    public get state(): number {
+    private _state: GameState = GameState.Ready;
+    public get state(): GameState {
         return this._state;
     }
-    public set state(value: number) {
+    public set state(value: GameState) {
         this._state = value;
         this.game.gameStateElement.textContent = stateTexts[value] || value.toString();
     }
@@ -129,14 +156,14 @@ export class GameLoop {
 
     constructor(public game: Game) {
         this.game.goBtn.addEventListener("click", () => {
-            if (this.state === 1) {
-                this.state = 2;
+            if (this.state === GameState.Building) {
+                this.state = GameState.StormStart;
             }
         });
     }
 
     public reset(): void {
-        this.state = 0;
+        this.state = GameState.Starting;
         this._tipIndex = -1;
         this._tipTimer = Infinity;
     }
@@ -165,7 +192,7 @@ export class GameLoop {
     public update = async () => {
         let timer = document.querySelector("#game-state-timer") as HTMLDivElement;
         if (timer) {
-            if (this.state === 1) {
+            if (this.state === GameState.Building) {
                 timer.textContent = this._stateTimer.toFixed(0);
                 timer.style.display = "";
                 this.game.goBtn.style.display = "";
@@ -185,15 +212,15 @@ export class GameLoop {
             this._tipUpdate();
         }
 
-        if (this.state === 0) {
+        if (this.state === GameState.Starting) {
             this.game.generateRandomPets();
-            this.state = 1;
-            this._stateTimer = 15;
+            this.state = GameState.Building;
+            this._stateTimer = 45;
         }
-        else if (this.state === 1) {
+        else if (this.state === GameState.Building) {
             this._stateTimer -= this.game.engine.getDeltaTime() / 1000;
             if (this._stateTimer <= 0) {
-                this.state = 2;
+                this.state = GameState.StormStart;
             }
             if (this.game.level === 1) {
                 if (!this._drawingHint) {
@@ -213,21 +240,38 @@ export class GameLoop {
                 }
             }
         }
-        else if (this.state === 2) {
+        else if (this.state === GameState.StormStart) {
+            this.game.night();
             this.game.pets.forEach(pet => pet.enablePhysics());
             this.game.generateRandomBalls();
             await Wait(2000);
-            if (this.state === 2) {
-                this.state = 3;
+            if (this.state === GameState.StormStart) {
+                this.state = GameState.Storming;
             }
         }
-        else if (this.state === 3) {
+        else if (this.state === GameState.Storming) {
             if (this.game.balls.size === 0) {
-                this.state = 4;
+                this.state = GameState.StormEnd;
             }
-            await Wait(150);
+            else {
+                let nearEnd = true;
+                for (let ball of this.game.balls) {
+                    if (ball.timeLeft > 2) {
+                        nearEnd = false;
+                        break;
+                    }
+                }
+                if (nearEnd) {
+                    this.state = GameState.StormEnd;
+                }
+            }
         }
-        else if (this.state === 4) {
+        else if (this.state === GameState.StormEnd) {
+            this.game.day();
+            await Wait(1500);
+            this.state = GameState.Scoring;
+        }
+        else if (this.state === GameState.Scoring) {
             for (let pet of this.game.pets) {
                 if (pet && !pet.isDisposed() && !pet.dying) {
                     pet.flash(new Color3(1, 1, 1), 3);
@@ -261,6 +305,25 @@ export class GameLoop {
                     let achievement = "SAVE_" + n.toFixed(0) + "_ANIMALS";
                     Wavedash.setAchievement(achievement, true);
                 }
+            }
+            await Wait(300);
+            this.state = GameState.LevelUp;
+        }
+        else if (this.state === GameState.LevelUp) {
+            Block.Width *= 0.98;
+            Block.MaterialIndex++;
+            this.game.level++;
+            this.state = GameState.Starting;
+            this._tipIndex = -1;
+            this._tipTimer = Infinity;
+        }
+        else if (this.state === GameState.GameOver) {
+            this.game.day();
+            this.game.showTooltip("- Game Over ! Thanks for playing !");
+            this.state = GameState.Ready;
+            this.game.titleElement.style.display = "block";
+            this.game.newGameBtn.style.display = "block";
+            if (USE_WAVEDASH_SDK) {
                 const leaderboard = await Wavedash.getOrCreateLeaderboard("HIGHSCORE", Wavedash.LeaderboardSortOrder.DESC, Wavedash.LeaderboardDisplayType.NUMERIC);
                 const leaderboardId = leaderboard.success ? leaderboard.data.id : null;
 
@@ -268,21 +331,6 @@ export class GameLoop {
                     await Wavedash.uploadLeaderboardScore(leaderboardId, this.game.score, true);
                 }
             }
-            await Wait(300);
-            this.state = 5;
-        }
-        else if (this.state === 5) {
-            Block.Width *= 0.98;
-            Block.MaterialIndex++;
-            this.game.level++;
-            this.state = 0;
-            this._tipIndex = -1;
-            this._tipTimer = Infinity;
-        }
-        else if (this.state === 6) {
-            this.game.showTooltip("- Game Over ! Thanks for playing !");
-            this.state = 7;
-            this.game.newGameBtn.style.display = "block";
             //this.game.hideUI();
         }
         this._updating = false;

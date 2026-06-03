@@ -25,10 +25,15 @@ import { PlayerControl } from "./PlayerControl";
 import { Block } from "./Block";
 import { Ball } from "./Ball";
 import { WinZone } from "./WinZone";
-import { GameLoop } from "./GameLoop";
+import { GameLoop, GameState } from "./GameLoop";
 import { ToonSoundManager } from "./ToonSound";
-import { CreateBeveledCylinder, CreateBeveledCylinderVertexData } from "babylonjs-tiaratumgames-tools";
+import { AnimationFactory, CreateBeveledCylinder, CreateBeveledCylinderVertexData } from "babylonjs-tiaratumgames-tools";
 import { MyCamera } from "./MyCamera";
+import { Easing } from "./Easing";
+import { ParticleHelper } from "@babylonjs/core/Particles/particleHelper";
+import { ParticleSystemSet } from "@babylonjs/core/Particles/particleSystemSet";
+import { VertexData } from "@babylonjs/core/Meshes/mesh.vertexData";
+import { DeserializeVertexData, SerializeVertexData } from "./VertexDataUtils";
 registerBuiltInLoaders();
 
 export class Game {
@@ -40,12 +45,20 @@ export class Game {
     public scene: Scene;
     public camera: ArcRotateCamera;
     public skybox: Mesh;
+    public skyboxMaterial: StandardMaterial;
+    public skyBoxColorAnim = AnimationFactory.EmptyColor3Callback;
+    public light: HemisphericLight;
+    public lightColorAnim = AnimationFactory.EmptyColor3Callback;
+    public lightIntensityAnim = AnimationFactory.EmptyNumberCallback;
     public ground: Mesh | null = null;
+    public rain: ParticleSystemSet | null = null;
     public playerControl: PlayerControl;
 
+    public petVertexDatas: VertexData[] = [];
     public baseMaterials: BaseMaterials;
     public toonSoundManager: ToonSoundManager;
 
+    public titleElement: HTMLDivElement;
     public newGameBtn: HTMLButtonElement;
     public scoreElement: HTMLDivElement;
     public tooltipElement: HTMLDivElement;
@@ -62,9 +75,11 @@ export class Game {
     public winzones: Set<WinZone> = new Set();
     public balls: Set<Ball> = new Set();
 
-    public ambientMusic: HTMLAudioElement | null = null;
+    public ambientMusic: StaticSound | null = null;
     public createSound: StaticSound | null = null;
     public starSound: StaticSound | null = null;
+    public thunderSound: StaticSound | null = null;
+    public rainSound: StaticSound | null = null;
 
     constructor(public canvas: HTMLCanvasElement) {
         Game.Instance = this;
@@ -74,28 +89,36 @@ export class Game {
         this.scene.clearColor.set(0, 0, 1, 1);
         this.camera = new MyCamera("camera", -Math.PI / 2, 0.48 * Math.PI, 22, new Vector3(0, 10, 0), this);
         //this.camera.attachControl(canvas, true);
-        let light = new HemisphericLight("light", new Vector3(1, 3, -2), this.scene);
-        light.direction = (new Vector3(2, 1, -1.5)).normalize();
-        light.intensity = 0.7;
+        this.light = new HemisphericLight("light", new Vector3(1, 3, -2), this.scene);
+        this.light.direction = (new Vector3(2, 1, -1.5)).normalize();
+        this.light.intensity = 0.7;
+
+        this.lightColorAnim = AnimationFactory.CreateColor3(this.light, this.light, "diffuse");
+        this.lightIntensityAnim = AnimationFactory.CreateNumber(this.light, this.light, "intensity");
+        
 		Engine.ShadersRepository = "./public/shaders/";
 
         this.skybox = MeshBuilder.CreateSphere("room-skybox", { diameter: 1000, sideOrientation: Mesh.BACKSIDE, segments: 4 }, this.scene);
         this.skybox.rotation.y = Math.PI;
-        let skyboxMaterial = new StandardMaterial("room-skybox-material", this.scene);
-        skyboxMaterial.backFaceCulling = false;
-        skyboxMaterial.diffuseColor.copyFromFloats(0, 0, 0);
-        skyboxMaterial.specularColor = new Color3(0, 0, 0);
+        this.skyboxMaterial = new StandardMaterial("room-skybox-material", this.scene);
+        this.skyboxMaterial.backFaceCulling = false;
+        this.skyboxMaterial.diffuseColor.copyFromFloats(0, 0, 0);
+        this.skyboxMaterial.emissiveColor.copyFromFloats(1, 1, 1);
+        this.skyboxMaterial.specularColor = new Color3(0, 0, 0);
         let skyTexture = new Texture("skyboxes/sky_toon.jpg", this.scene);
-        skyboxMaterial.diffuseTexture = skyTexture;
-        skyboxMaterial.emissiveTexture = skyTexture;
-        this.skybox.material = skyboxMaterial;
+        this.skyboxMaterial.diffuseTexture = skyTexture;
+        this.skybox.material = this.skyboxMaterial;
+
+        this.skyBoxColorAnim = AnimationFactory.CreateColor3(this.skybox, this.skyboxMaterial, "emissiveColor");
 
         this.baseMaterials = new BaseMaterials(this);
         this.toonSoundManager = new ToonSoundManager(this);
 
+        this.titleElement = document.getElementById("title") as HTMLDivElement;
         this.newGameBtn = document.getElementById("newgame-btn") as HTMLButtonElement;
         this.newGameBtn.addEventListener("click", () => {
             this.reset();
+            this.titleElement.style.display = "none";
             this.newGameBtn.style.display = "none";
         });
         this.scoreElement = document.getElementById("score") as HTMLDivElement;
@@ -111,24 +134,6 @@ export class Game {
 
         this.hideUI();
 
-        this.ambientMusic = document.createElement("audio");
-        this.ambientMusic.src = "./sounds/Origami.mp3";
-        this.ambientMusic.loop = true;
-        this.ambientMusic.volume = 0.2;
-        
-        let attempts = 0;
-        let tryPlayMusic = () => {
-            if (this.ambientMusic?.paused) {
-                this.ambientMusic.play().catch(() => {
-                    attempts++;
-                    if (attempts < 5) {
-                        setTimeout(tryPlayMusic, 1000);
-                    }
-                });
-            }
-        }
-        tryPlayMusic();
-
         window.addEventListener("resize", () => {
             this.onResize();
         });
@@ -137,25 +142,38 @@ export class Game {
     public async initAndStart(): Promise<void> {
         (async () => {
             this.audioEngine = await CreateAudioEngineAsync();
+            this.ambientMusic = await CreateSoundAsync("ambient-music", "sounds/Origami.mp3", { loop: true, autoplay: true, volume: 0.2 });
             this.createSound = await CreateSoundAsync("create-sound", "sounds/activate.mp3", { loop: false, autoplay: false, volume: 0.2 });
             this.starSound = await CreateSoundAsync("star-sound", "sounds/collect_star.mp3", { loop: false, autoplay: false, volume: 0.2 });
+            this.thunderSound = await CreateSoundAsync("thunder-sound", "sounds/thunder.mp3", { loop: false, autoplay: false, volume: 0.2 });
+            this.rainSound = await CreateSoundAsync("rain-sound", "sounds/rain.mp3", { loop: false, autoplay: false, volume: 0.2 });
         })();
+        
+        let petVertexDatasResponse = await fetch("meshes/cube-pets-vertexdatas.json");
+        let vertexDataSerialized = await petVertexDatasResponse.json();
+        this.petVertexDatas = vertexDataSerialized.map((v: any) => DeserializeVertexData(v));
+
         await this.loadPhysics();
         await this.start();
 
+        let vertexDatas: any[] = [];
         let N = PETS.length;
         for (let n = 0; n < N; n++) {
-            setTimeout(() => {
-                if (this.gameLoop.state === 7) {
+            setTimeout(async () => {
+                if (this.gameLoop.state === GameState.Ready) {
                     let petName = PETS[n];
                     
                     let a = n / N * Math.PI * 2;
-                    let x = Math.cos(a) * 10 * (Math.random() * 0.5 + 0.5);
-                    let z = Math.sin(a) * 10 * (Math.random() * 0.5 + 0.5);
+                    let x = Math.cos(a) * 10 * (Math.random() * 0.8 + 0.2);
+                    let z = Math.sin(a) * 10 * (Math.random() * 0.8 + 0.2);
 
                     let pet = new Pet(petName, this);
-                    pet.initialize();
                     pet.position.set(x, 0.5, z);
+                    let vertexData = await pet.initialize();
+                    if (vertexData) {
+                        vertexDatas[n] = SerializeVertexData(vertexData);
+                        console.log(vertexDatas);
+                    }
                 }
             }, 20000 * Math.random());
         }
@@ -186,7 +204,7 @@ export class Game {
 
         const m = new StandardMaterial("grass");
         m.diffuseTexture = new Texture("textures/grass.jpg", this.scene);
-        m.emissiveColor.copyFromFloats(0.2, 0.4, 0.3);
+        m.emissiveColor.copyFromFloats(0.3, 0.3, 0.3);
         m.specularColor.copyFromFloats(0, 0, 0);
 
         this.ground.material = m;
@@ -282,7 +300,7 @@ export class Game {
 
     public generateRandomBalls(n?: number): void {
         if (!(n! > 0)) {
-            n = 2 * this.level + 2;
+            n = 2 * this.level + 4;
         }
         for (let i = 0; i < n!; i++) {
             setTimeout(() => {
@@ -295,7 +313,7 @@ export class Game {
 
                 ball.init(0.15 + 0.25 * Math.random() * this.level / 8);
 
-                let angle2 = angle + (Math.random() * 2 - 1) * Math.PI / 8;
+                let angle2 = angle + (Math.random() * 2 - 1) * Math.PI / 12;
                 let x2 = Math.cos(angle2);
                 let y2 = Math.sin(angle2);
                 ball.physicsBody?.setLinearVelocity(new Vector3(- x2 * 15, - y2 * 15, 0));
@@ -343,13 +361,61 @@ export class Game {
             }
         }
         if (this.lives < 0) {
-            this.gameLoop.state = 6;
+            this.gameLoop.state = GameState.GameOver;
         }
     }
 
     public showTooltip(text: string): void {
         this.tooltipElement.textContent = text;
         this.tooltipElement.style.opacity = "1";
+    }
+
+    private _isDay: boolean = true;
+    public day(): void {
+        if (this._isDay) {
+            return;
+        }
+        this._isDay = true;
+        if (this.rain) {
+            this.rain.dispose();
+            this.rain = null;
+        }
+        this.ambientMusic?.setVolume(0.2, { duration: 2 });
+        this.rainSound?.stop();
+        this.skyBoxColorAnim(new Color3(1, 1, 1), 1, Easing.easeInCubic);
+        this.lightIntensityAnim(0.7, 1, Easing.easeInCubic);
+    }
+
+    public async night(): Promise<void> {
+        if (!this._isDay) {
+            return;
+        }
+        this._isDay = false;
+        if (!this.rain) {
+            this.rain = await ParticleHelper.CreateAsync("rain", this.scene, false);
+            this.rain.start();
+        }
+        this.ambientMusic?.setVolume(0, { duration: 0.5 });
+        this.rainSound?.play();
+        this.skyBoxColorAnim(new Color3(0.3, 0.25, 0.2), 1, Easing.easeOutCubic);
+        this.lightIntensityAnim(0.5, 1, Easing.easeOutCubic);
+        for (let n = 0; n < 2; n++) {
+            setTimeout(() => {
+                this._storm();
+            }, 1000 + 3000 * Math.random());
+        }
+    }
+
+    private async _storm(): Promise<void> {
+        this.audioEngine?.unlockAsync().then(() => {
+            this.thunderSound?.play();
+        });
+
+        this.skyBoxColorAnim(new Color3(0, 0, 0), 0.1, Easing.easeOutCubic);
+        await this.lightIntensityAnim(3 + 2 * Math.random(), 0.1, Easing.easeOutCubic);
+
+        this.lightIntensityAnim(0.5, 0.1, Easing.easeInCubic);
+        this.skyBoxColorAnim(new Color3(0.3, 0.25, 0.2), 0.1, Easing.easeInCubic);
     }
 
     public reset(): void {

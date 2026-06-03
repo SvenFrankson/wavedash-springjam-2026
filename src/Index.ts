@@ -1,7 +1,7 @@
 import { Game } from './Game';
 import './style.css';
 
-export var USE_WAVEDASH_SDK = false;
+export var USE_WAVEDASH_SDK = true;
 if (window.location.href.indexOf("localhost") != -1) {
     USE_WAVEDASH_SDK = false;
 }
@@ -21,6 +21,11 @@ const newGame = document.createElement('button');
 newGame.id = 'newgame-btn';
 newGame.textContent = 'NEW GAME';
 app.appendChild(newGame);
+
+const title = document.createElement('div');
+title.id = 'title';
+title.innerHTML = 'CUBE PETS TOWER';
+app.appendChild(title);
 
 const score = document.createElement('div');
 score.id = 'score';

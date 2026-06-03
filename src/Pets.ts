@@ -9,12 +9,13 @@ import { Texture } from "@babylonjs/core/Materials/Textures/texture";
 import { PhysicsBody } from "@babylonjs/core/Physics/v2/physicsBody";
 import { PhysicsMotionType } from "@babylonjs/core/Physics/v2/IPhysicsEnginePlugin";
 import { PhysicsShapeBox } from "@babylonjs/core/Physics/v2/physicsShape";
-import { AnimationFactory, ScaleVertexDataInPlace } from "babylonjs-tiaratumgames-tools";
+import { AnimationFactory, MergeVertexDatas, RotateAngleAxisVertexDataInPlace, RotateVertexDataInPlace, ScaleVertexDataInPlace, TranslateVertexDataInPlace } from "babylonjs-tiaratumgames-tools";
 import { Game } from "./Game";
 import { BaseMaterials } from "./BaseMaterials";
 import { WinZone } from "./WinZone";
 import { RandomHello, ToonSoundType, Wait } from "./ToonSound";
 import { Easing } from "./Easing";
+import { Axis } from "@babylonjs/core/Maths/pure";
 
 export const PETS = [
     "animal-beaver",
@@ -56,6 +57,7 @@ export class PetHitBox extends Mesh {
 export class Pet extends Mesh {
 
     public static PetSize = 0.8;
+    public petIndex: number = 0;
     public hitBox: Mesh;
     public petMaterial: StandardMaterial;
     public winzone: WinZone | null = null;
@@ -63,6 +65,7 @@ export class Pet extends Mesh {
     constructor(public petName: string, public game: Game) {
         super(petName);
 
+        this.petIndex = PETS.indexOf(petName);
         this.petMaterial = new StandardMaterial("petMaterial", this.game.scene);
         this.petMaterial.diffuseTexture = new Texture("meshes/Textures/colormap.png");
         this.petMaterial.specularColor = new Color3(0.1, 0.1, 0.1);
@@ -73,44 +76,50 @@ export class Pet extends Mesh {
         this.game.pets.add(this);
     }
 
-    public async initialize(): Promise<void> {
+    public async initialize(): Promise<VertexData | undefined> {
 
         this.scaling.copyFromFloats(0, 0, 0);
 
+        /*
+        let vertexDatas: VertexData[] = [];
         let petMeshParts = await SceneLoader.ImportMeshAsync(
             "",
             "meshes/" + this.petName + ".obj"
         );
+        
         petMeshParts.meshes.forEach(mesh => {
-            if (this.isDisposed()) {
-                mesh.dispose();
-            }
-            mesh.isVisible = false;
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    mesh.isVisible = true;
-                });
-            });
-            mesh.parent = this;
-            mesh.position.y = -Pet.PetSize / 2;
-            mesh.rotation.y = Math.PI;
             if (mesh instanceof Mesh) {
-                BaseMaterials.MakeOutline(mesh);
                 let vData = VertexData.ExtractFromMesh(mesh);
-                ScaleVertexDataInPlace(vData, 0.5);
+                vertexDatas.push(vData);
                 vData.applyToMesh(mesh);
-                mesh.material = this.petMaterial;
             }
+            mesh.dispose();
         });
+        */
+
+        let petMesh = new Mesh(this.name + "-mesh", this.game.scene);
+        BaseMaterials.MakeOutline(petMesh);
+        petMesh.material = this.petMaterial;
+        petMesh.parent = this;
+
+        this.game.petVertexDatas[this.petIndex].applyToMesh(petMesh);
+        
+        /*
+        let vertexData = MergeVertexDatas(...vertexDatas);
+        ScaleVertexDataInPlace(vertexData, 0.5);
+        RotateAngleAxisVertexDataInPlace(vertexData, Math.PI, Axis.Y);
+        TranslateVertexDataInPlace(vertexData, new Vector3(0, -Pet.PetSize / 2, 0));
+        vertexData.applyToMesh(petMesh);
+        */
 
         if (this.isDisposed()) {
-            return;
+            return undefined;
         }
         let scaleAnim = AnimationFactory.CreateVector3(this, this, "scaling");
         await scaleAnim(new Vector3(1, 1, 1), 1.5, Easing.easeOutElastic);
 
         if (this.isDisposed()) {
-            return;
+            return undefined;
         }
         this.game.toonSoundManager.start({
             text: RandomHello(),
@@ -120,6 +129,7 @@ export class Pet extends Mesh {
             duration: 1,
             type: ToonSoundType.Poc
         });
+        return undefined;
     }
 
     public async enablePhysics(): Promise<void> {

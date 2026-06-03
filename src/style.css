@@ -66,13 +66,29 @@ body {
     width: 240px;
     padding: 20px 30px;
     font-size: 40px;
-    background-color: #49da9a;
+    background-color: #34bbe6;
     color: white;
     border: 2px solid black;
     border-radius: 10px;
     cursor: pointer;
     font-family: JungleFever;
     -webkit-text-stroke: 4px black;
+    paint-order: stroke fill;
+}
+
+#title {
+    position: absolute;
+    top: 10%;
+    left: 0px;
+    width: 100%;
+    text-align: center;
+    font-size: 80px;
+    color: white;
+    background: linear-gradient(90deg, #f7d038, #49da9a);
+    border: 2px solid black;
+    cursor: pointer;
+    font-family: JungleFever;
+    -webkit-text-stroke: 8px black;
     paint-order: stroke fill;
 }
 
