@@ -2,7 +2,7 @@ import { Game } from './Game';
 import './style.css';
 
 export var USE_WAVEDASH_SDK = true;
-if (window.location.href.indexOf("localhost") != -1) {
+if (window.location.href.indexOf("localhost") != -1 || window.location.href.indexOf(":5173") != -1) {
     USE_WAVEDASH_SDK = false;
 }
 export var Wavedash: any;

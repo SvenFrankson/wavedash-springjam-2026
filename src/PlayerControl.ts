@@ -179,7 +179,7 @@ export class PlayerControl {
                     }
                     this._selectedBlock.physicsBody?.setLinearDamping(10);
                     this._selectedBlock.physicsBody?.setAngularDamping(4);
-                    this._selectedBlock.physicsBody?.applyForce(delta.scale(20 * this._selectedBlock.mass), p);
+                    this._selectedBlock.physicsBody?.applyForce(delta.scale(30 * this._selectedBlock.mass), p);
 
                     let torque = Vector3.Cross(this._selectedBlock.forward, Axis.Z).scale(3);
                     this._selectedBlock.physicsBody?.applyTorque(torque);

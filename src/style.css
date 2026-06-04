@@ -61,7 +61,7 @@ body {
 
 #newgame-btn {
     position: absolute;
-    top: 40%;
+    top: 50%;
     left: calc(50% - 120px);
     width: 240px;
     padding: 20px 30px;
@@ -82,7 +82,7 @@ body {
     left: 0px;
     width: 100%;
     text-align: center;
-    font-size: 80px;
+    font-size: 60px;
     color: white;
     background: linear-gradient(90deg, #f7d038, #49da9a);
     border: 2px solid black;

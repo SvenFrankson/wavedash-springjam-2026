@@ -84,7 +84,7 @@ export class Game {
     constructor(public canvas: HTMLCanvasElement) {
         Game.Instance = this;
 
-        this.engine = new Engine(canvas, true, undefined, false)
+        this.engine = new Engine(canvas, true, undefined, true)
         this.scene = new Scene(this.engine);
         this.scene.clearColor.set(0, 0, 1, 1);
         this.camera = new MyCamera("camera", -Math.PI / 2, 0.48 * Math.PI, 22, new Vector3(0, 10, 0), this);
@@ -189,8 +189,7 @@ export class Game {
 
         this.ground = new Mesh("ground", this.scene);
         this.ground.position.y = -0.5;
-
-        let vertexData = CreateBeveledCylinderVertexData({ tessellation: 64, radius: 10, height: 1 });
+        let vertexData = CreateBeveledCylinderVertexData({ tessellation: 64, radius: 10, height: 1, bevel: 0.2 });
         if (vertexData.uvs) {
             for (let i = 0; i < vertexData.positions!.length / 3; i++) {
                 let x = vertexData.positions![i * 3];
@@ -208,6 +207,14 @@ export class Game {
         m.specularColor.copyFromFloats(0, 0, 0);
 
         this.ground.material = m;
+
+        
+        let groundBorder = new Mesh("ground", this.scene);
+        groundBorder.position.y = -0.7;
+        vertexData = CreateBeveledCylinderVertexData({ tessellation: 64, radius: 10.1, height: 1, bevel: 0.05 });
+        vertexData.applyToMesh(groundBorder);
+        BaseMaterials.MakeOutline(groundBorder);
+        groundBorder.material = this.baseMaterials.blue;
 
         const body = new PhysicsBody(this.ground, PhysicsMotionType.STATIC, false, this.scene);
         body.setMassProperties({
@@ -328,7 +335,7 @@ export class Game {
 
         this.scene.onBeforeRenderObservable.add(this.update);
         this.scene.onBeforeRenderObservable.add(this.gameLoop.update);
-        this.scene.onBeforeRenderObservable.add(this.playerControl.update);
+        this.scene.onBeforePhysicsObservable.add(this.playerControl.update);
 
         
 
