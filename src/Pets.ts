@@ -186,6 +186,14 @@ export class Pet extends Mesh {
         }
     }
 
+    public highlight(): void {
+        BaseMaterials.MakeOutlineWithChild(this, undefined, 1, 1, 1);
+    }
+
+    public unhighlight(): void {
+        BaseMaterials.MakeOutlineWithChild(this);
+    }
+
     public dispose(): void {
         super.dispose();
         this.game.pets.delete(this);

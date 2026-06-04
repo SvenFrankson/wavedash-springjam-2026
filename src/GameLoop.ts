@@ -306,6 +306,15 @@ export class GameLoop {
                     Wavedash.setAchievement(achievement, true);
                 }
             }
+            
+            if (USE_WAVEDASH_SDK) {
+                const leaderboard = await Wavedash.getOrCreateLeaderboard("HIGHSCORE", Wavedash.LeaderboardSortOrder.DESC, Wavedash.LeaderboardDisplayType.NUMERIC);
+                const leaderboardId = leaderboard.success ? leaderboard.data.id : null;
+
+                if (leaderboardId) {
+                    await Wavedash.uploadLeaderboardScore(leaderboardId, this.game.score, true);
+                }
+            }
             await Wait(300);
             this.state = GameState.LevelUp;
         }
@@ -323,14 +332,6 @@ export class GameLoop {
             this.state = GameState.Ready;
             this.game.titleElement.style.display = "block";
             this.game.newGameBtn.style.display = "block";
-            if (USE_WAVEDASH_SDK) {
-                const leaderboard = await Wavedash.getOrCreateLeaderboard("HIGHSCORE", Wavedash.LeaderboardSortOrder.DESC, Wavedash.LeaderboardDisplayType.NUMERIC);
-                const leaderboardId = leaderboard.success ? leaderboard.data.id : null;
-
-                if (leaderboardId) {
-                    await Wavedash.uploadLeaderboardScore(leaderboardId, this.game.score, true);
-                }
-            }
             //this.game.hideUI();
         }
         this._updating = false;

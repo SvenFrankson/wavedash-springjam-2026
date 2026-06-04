@@ -33,12 +33,12 @@ export class MyCamera extends ArcRotateCamera {
         this.zoneMax.x = Math.max(this.zoneMax.x, 4);
 
         this.zoneMax.y -= 0.1;
-        this.zoneMax.y = Math.max(this.zoneMax.y, 2);
+        this.zoneMax.y = Math.max(this.zoneMax.y, 6);
 
         for (let pet of this.game.pets) {
             this.zoneMin.x = Math.min(this.zoneMin.x, pet.position.x - 4);
             this.zoneMax.x = Math.max(this.zoneMax.x, pet.position.x + 4);
-            this.zoneMax.y = Math.max(this.zoneMax.y, pet.position.y + 2);
+            this.zoneMax.y = Math.max(this.zoneMax.y, pet.position.y + 6);
         }
     }
 

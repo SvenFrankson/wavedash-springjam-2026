@@ -44,7 +44,7 @@ export class Block extends Mesh {
             this.size,
             this.game.scene
         );
-        body.shape.material = {friction: 0.4, restitution: 0.5};
+        body.shape.material = {friction: 0.4, restitution: 0.3};
         
         this.game.scene.onBeforeRenderObservable.add(this._update);
     }
@@ -63,6 +63,14 @@ export class Block extends Mesh {
             BaseMaterials.MakeOutlineWithChild(this);
             await Wait(150);
         }
+    }
+
+    public highlight(): void {
+        BaseMaterials.MakeOutlineWithChild(this, undefined, 1, 1, 1);
+    }
+
+    public unhighlight(): void {
+        BaseMaterials.MakeOutlineWithChild(this);
     }
 
     public dispose(): void {

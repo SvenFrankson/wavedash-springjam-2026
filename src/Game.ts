@@ -34,7 +34,10 @@ import { ParticleHelper } from "@babylonjs/core/Particles/particleHelper";
 import { ParticleSystemSet } from "@babylonjs/core/Particles/particleSystemSet";
 import { VertexData } from "@babylonjs/core/Meshes/mesh.vertexData";
 import { DeserializeVertexData, SerializeVertexData } from "./VertexDataUtils";
+import { USE_WAVEDASH_SDK, Wavedash } from "./Index";
 registerBuiltInLoaders();
+
+declare function incLoading(progress?: number): void;
 
 export class Game {
 
@@ -82,6 +85,7 @@ export class Game {
     public rainSound: StaticSound | null = null;
 
     constructor(public canvas: HTMLCanvasElement) {
+        incLoading();
         Game.Instance = this;
 
         this.engine = new Engine(canvas, true, undefined, true)
@@ -133,6 +137,7 @@ export class Game {
         this.gameLoop = new GameLoop(this);
 
         this.hideUI();
+        incLoading();
 
         window.addEventListener("resize", () => {
             this.onResize();
@@ -142,19 +147,30 @@ export class Game {
     public async initAndStart(): Promise<void> {
         (async () => {
             this.audioEngine = await CreateAudioEngineAsync();
-            this.ambientMusic = await CreateSoundAsync("ambient-music", "sounds/Origami.mp3", { loop: true, autoplay: true, volume: 0.2 });
-            this.createSound = await CreateSoundAsync("create-sound", "sounds/activate.mp3", { loop: false, autoplay: false, volume: 0.2 });
-            this.starSound = await CreateSoundAsync("star-sound", "sounds/collect_star.mp3", { loop: false, autoplay: false, volume: 0.2 });
-            this.thunderSound = await CreateSoundAsync("thunder-sound", "sounds/thunder.mp3", { loop: false, autoplay: false, volume: 0.2 });
-            this.rainSound = await CreateSoundAsync("rain-sound", "sounds/rain.mp3", { loop: false, autoplay: false, volume: 0.2 });
         })();
         
+        incLoading();
+        this.ambientMusic = await CreateSoundAsync("ambient-music", "sounds/Origami.mp3", { loop: true, autoplay: true, volume: 0.2 });
+        incLoading();
+        this.createSound = await CreateSoundAsync("create-sound", "sounds/activate.mp3", { loop: false, autoplay: false, volume: 0.2 });
+        incLoading();
+        this.starSound = await CreateSoundAsync("star-sound", "sounds/collect_star.mp3", { loop: false, autoplay: false, volume: 0.2 });
+        incLoading();
+        this.thunderSound = await CreateSoundAsync("thunder-sound", "sounds/thunder.mp3", { loop: false, autoplay: false, volume: 0.2 });
+        incLoading();
+        this.rainSound = await CreateSoundAsync("rain-sound", "sounds/rain.mp3", { loop: false, autoplay: false, volume: 0.2 });
+
+        incLoading();
         let petVertexDatasResponse = await fetch("meshes/cube-pets-vertexdatas.json");
+        incLoading();
         let vertexDataSerialized = await petVertexDatasResponse.json();
         this.petVertexDatas = vertexDataSerialized.map((v: any) => DeserializeVertexData(v));
 
+        incLoading();
         await this.loadPhysics();
+        incLoading();
         await this.start();
+        incLoading();
 
         let vertexDatas: any[] = [];
         let N = PETS.length;
@@ -176,6 +192,10 @@ export class Game {
                     }
                 }
             }, 20000 * Math.random());
+        }
+        incLoading();
+        if (USE_WAVEDASH_SDK) {
+            await Wavedash.init();
         }
     }
 
@@ -309,21 +329,25 @@ export class Game {
         if (!(n! > 0)) {
             n = 2 * this.level + 4;
         }
+        let maxY = 0;
+        for (let pet of this.pets) {
+            maxY = Math.max(maxY, pet.position.y);
+        }
         for (let i = 0; i < n!; i++) {
             setTimeout(() => {
-                let angle = Math.random() * Math.PI * 0.8 + Math.PI * 0.1;
+                let angle = Math.random() * Math.PI * 0.9 + Math.PI * 0.05;
                 let x = Math.cos(angle) * 20;
                 let y = Math.sin(angle) * 20;
                 let ball = new Ball("ball", this);
                 ball.position.x = x;
-                ball.position.y = y;
+                ball.position.y = y + maxY * 0.5;
 
-                ball.init(0.15 + 0.25 * Math.random() * this.level / 8);
+                ball.init(0.18 + 0.25 * Math.random() * this.level / 8);
 
-                let angle2 = angle + (Math.random() * 2 - 1) * Math.PI / 12;
+                let angle2 = angle + (Math.random() * 2 - 1) * Math.PI / 16;
                 let x2 = Math.cos(angle2);
                 let y2 = Math.sin(angle2);
-                ball.physicsBody?.setLinearVelocity(new Vector3(- x2 * 15, - y2 * 15, 0));
+                ball.physicsBody?.setLinearVelocity(new Vector3(- x2 * 15 + 5 * Math.random(), - y2 * 15 + 5 * Math.random(), 0));
             }, Math.random() * 2000);
         }
     }
@@ -336,8 +360,6 @@ export class Game {
         this.scene.onBeforeRenderObservable.add(this.update);
         this.scene.onBeforeRenderObservable.add(this.gameLoop.update);
         this.scene.onBeforePhysicsObservable.add(this.playerControl.update);
-
-        
 
         this.engine.runRenderLoop(() => {
             this.scene.render()

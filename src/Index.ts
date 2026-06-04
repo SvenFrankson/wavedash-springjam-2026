@@ -7,6 +7,13 @@ if (window.location.href.indexOf("localhost") != -1 || window.location.href.inde
 }
 export var Wavedash: any;
 
+declare function incLoading(progress?: number): void;
+
+if (USE_WAVEDASH_SDK) {
+    Wavedash = await (window as any).Wavedash;
+}
+incLoading();
+
 const app = document.querySelector<HTMLDivElement>('#app')
 
 if (!app) {
@@ -66,11 +73,6 @@ tooltip.id = 'tooltip';
 tooltip.textContent = 'Hello World !';
 app.appendChild(tooltip);
 
-if (USE_WAVEDASH_SDK) {
-    Wavedash = await (window as any).Wavedash;
-    Wavedash.updateLoadProgressZeroToOne(0.5);
-    await Wavedash.init();
-}
-
 const game = new Game(canvas);
 game.initAndStart();
+

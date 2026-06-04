@@ -51,7 +51,7 @@ export class Ball extends Mesh {
             this.radius,
             this.game.scene
         );
-        body.shape.material = {friction: 0.1, restitution: 0.7};
+        body.shape.material = {friction: 0.1, restitution: 1};
 
         this.game.scene.onBeforeRenderObservable.add(this._update);
     }
