@@ -20,13 +20,14 @@ export enum GameState {
     StormEnd,
     Scoring,
     LevelUp,
+    GameOverStart,
     GameOver,
     Ready,
     Eight
 }
 
 var tooltips: string[] = [];
-tooltips[0] = "- Hello ! Welcome to Animal Shelter :)";
+tooltips[0] = "- Hello ! Welcome to Cube Pets Tower :)";
 tooltips[1] = "- Please, help : Build a shelter before the rain !";
 tooltips[2] = "Tips : Press NEXT when you think the shelter is ready :)";
 tooltips[3] = "- The shelter must help me stay in my zone !";
@@ -66,19 +67,7 @@ var tipMinMaxIndexes = [
     [4, 6]
 ];
 
-var stateTexts = [
-    "",
-    "",
-    "Wait for the Storm to Pass !",
-    "Wait for the Storm to Pass !",
-    "Calculating Score...",
-    "",
-    "",
-    "Game Over",
-    "Game Over",
-    "",
-    ""
-];
+var stateTexts: string[] = [];
 
 stateTexts[GameState.Starting] = "";
 stateTexts[GameState.Building] = "Build a Shelter !";
@@ -87,7 +76,8 @@ stateTexts[GameState.Storming] = "Wait for the Storm to Pass !";
 stateTexts[GameState.StormEnd] = "Wait for the Storm to Pass !";
 stateTexts[GameState.Scoring] = "Calculating Score...";
 stateTexts[GameState.LevelUp] = "";
-stateTexts[GameState.GameOver] = "Game Over";
+stateTexts[GameState.GameOverStart] = "";
+stateTexts[GameState.GameOver] = "Well played !";
 stateTexts[GameState.Ready] = "";
 stateTexts[GameState.Eight] = "";
 
@@ -150,7 +140,7 @@ export class GameLoop {
     }
     public set state(value: GameState) {
         this._state = value;
-        this.game.gameStateElement.textContent = stateTexts[value] || value.toString();
+        this.game.gameStateElement.textContent = stateTexts[value];
     }
     private _drawingHint: boolean = false;
 
@@ -326,13 +316,22 @@ export class GameLoop {
             this._tipIndex = -1;
             this._tipTimer = Infinity;
         }
-        else if (this.state === GameState.GameOver) {
-            this.game.day();
+        else if (this.state === GameState.GameOverStart) {
             this.game.showTooltip("- Game Over ! Thanks for playing !");
-            this.state = GameState.Ready;
-            this.game.titleElement.style.display = "block";
+            await Wait(3000);
+            this.state = GameState.GameOver;
+        }
+        else if (this.state === GameState.GameOver) {
+            this.game.gameoverButton.style.display = "block";
+            this.game.showTooltip("- Game Over ! Thanks for playing !");
+            this.game.creditElement.style.display = "block";
+            await Wait(1000);
+        }
+        else if (this.state === GameState.Ready) {
+            this.game.gameoverButton.style.display = "none";
+            this.game.homeContainer.style.display = "block";
             this.game.newGameBtn.style.display = "block";
-            //this.game.hideUI();
+            this.game.creditElement.style.display = "block";
         }
         this._updating = false;
     }

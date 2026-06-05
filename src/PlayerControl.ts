@@ -11,7 +11,7 @@ import { Block } from "./Block";
 import { GameState } from "./GameLoop";
 import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial.pure";
 import { Texture } from "@babylonjs/core/Materials/Textures/texture.pure";
-import { CreatePlaneVertexData } from "@babylonjs/core";
+import { CreatePlaneVertexData } from "@babylonjs/core/Meshes/Builders/planeBuilder.pure";
 
 export class PlayerControl {
 
@@ -98,6 +98,10 @@ export class PlayerControl {
     }
     
     public onPointerDown = () => {
+        if (this.game.gameLoop.state === GameState.GameOver) {
+            this.game.gameLoop.state = GameState.Ready;
+            return;
+        }
         if (this.game.gameLoop.state != GameState.Building) {
             return;
         }

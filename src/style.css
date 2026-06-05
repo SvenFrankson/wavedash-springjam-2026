@@ -59,12 +59,29 @@ body {
     text-align: center;
 }
 
+#title {
+    position: absolute;
+    top: 5%;
+    left: 0px;
+    width: 100%;
+    text-align: center;
+    font-size: 60px;
+    color: white;
+    background: linear-gradient(90deg, #f7d038, #49da9a);
+    border: 2px solid black;
+    cursor: pointer;
+    font-family: JungleFever;
+    -webkit-text-stroke: 8px black;
+    paint-order: stroke fill;
+}
+
 #newgame-btn {
     position: absolute;
-    top: 50%;
+    top: calc(50% - 120px);
     left: calc(50% - 120px);
     width: 240px;
-    padding: 20px 30px;
+    height: 140px;
+    padding: 20px;
     font-size: 40px;
     background-color: #34bbe6;
     color: white;
@@ -76,19 +93,34 @@ body {
     paint-order: stroke fill;
 }
 
-#title {
+#gameover-btn {
     position: absolute;
-    top: 10%;
+    top: calc(50% - 70px);
+    left: calc(50% - 120px);
+    width: 240px;
+    height: 80px;
+    padding: 20px;
+    font-size: 30px;
+    background-color: #e6261f;
+    color: white;
+    border: 2px solid black;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: JungleFever;
+    -webkit-text-stroke: 4px black;
+    paint-order: stroke fill;
+}
+
+#credit {
+    position: absolute;
+    bottom: 70px;
     left: 0px;
     width: 100%;
     text-align: center;
-    font-size: 60px;
+    font-size: 16px;
     color: white;
-    background: linear-gradient(90deg, #f7d038, #49da9a);
-    border: 2px solid black;
-    cursor: pointer;
     font-family: JungleFever;
-    -webkit-text-stroke: 8px black;
+    -webkit-text-stroke: 2px black;
     paint-order: stroke fill;
 }
 

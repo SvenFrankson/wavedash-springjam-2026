@@ -61,6 +61,7 @@ export class Game {
     public baseMaterials: BaseMaterials;
     public toonSoundManager: ToonSoundManager;
 
+    public homeContainer: HTMLDivElement;
     public titleElement: HTMLDivElement;
     public newGameBtn: HTMLButtonElement;
     public scoreElement: HTMLDivElement;
@@ -68,6 +69,8 @@ export class Game {
     public goBtn: HTMLButtonElement;
     public livesElement: HTMLDivElement;
     public gameStateElement: HTMLDivElement;
+    public creditElement: HTMLDivElement;
+    public gameoverButton: HTMLButtonElement;
 
     public level: number = 1;
     private _score: number = 0;
@@ -118,18 +121,24 @@ export class Game {
         this.baseMaterials = new BaseMaterials(this);
         this.toonSoundManager = new ToonSoundManager(this);
 
+        this.homeContainer = document.getElementById("home-container") as HTMLDivElement;
         this.titleElement = document.getElementById("title") as HTMLDivElement;
         this.newGameBtn = document.getElementById("newgame-btn") as HTMLButtonElement;
         this.newGameBtn.addEventListener("click", () => {
             this.reset();
+            this.homeContainer.style.display = "none";
             this.titleElement.style.display = "none";
             this.newGameBtn.style.display = "none";
+            this.creditElement.style.display = "none";
+            this.gameoverButton.style.display = "none";
         });
         this.scoreElement = document.getElementById("score") as HTMLDivElement;
         this.tooltipElement = document.getElementById("tooltip") as HTMLDivElement;
         this.livesElement = document.getElementById("lives") as HTMLDivElement;
         this.goBtn = document.getElementById("next-btn") as HTMLButtonElement;
         this.gameStateElement = document.getElementById("game-state") as HTMLDivElement;
+        this.creditElement = document.getElementById("credit") as HTMLDivElement;
+        this.gameoverButton = document.getElementById("gameover-btn") as HTMLButtonElement;
         this.lives = 5;
 
         this.playerControl = new PlayerControl(this);
@@ -342,7 +351,7 @@ export class Game {
                 ball.position.x = x;
                 ball.position.y = y + maxY * 0.5;
 
-                ball.init(0.18 + 0.25 * Math.random() * this.level / 8);
+                ball.init(0.18 + 0.20 * Math.random() * this.level / 8);
 
                 let angle2 = angle + (Math.random() * 2 - 1) * Math.PI / 16;
                 let x2 = Math.cos(angle2);
@@ -390,7 +399,7 @@ export class Game {
             }
         }
         if (this.lives < 0) {
-            this.gameLoop.state = GameState.GameOver;
+            this.gameLoop.state = GameState.GameOverStart;
         }
     }
 
